@@ -1,31 +1,40 @@
 {
   description = "Support for event-driven architectures in Python";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
+  inputs = rec {
+    nixos.url = "github:NixOS/nixpkgs/nixos-22.11";
     flake-utils.url = "github:numtide/flake-utils";
-    poetry2nix.url = "github:nix-community/poetry2nix";
+    poetry2nix = {
+      url = "github:nix-community/poetry2nix";
+      inputs.nixpkgs.follows = "nixos";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
   outputs = inputs:
     with inputs;
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ poetry2nix.overlay ];
-        };
+        pkgs = import nixos { inherit system; };
         python = pkgs.python3;
         pythonPackages = python.pkgs;
+        inherit (poetry2nix.legacyPackages.${system}) mkPoetryApplication;
       in rec {
         packages = {
-          pythoneda-0_0_1 = (import ./pythoneda-0.0.1.nix) {
-            inherit (pythonPackages)
-              buildPythonApplication grpcio grpcio-tools requests packaging toml
-              beautifulsoup4 mistune;
-            inherit (pkgs) lib gnumake;
-            mkPoetryApplication = pkgs.poetry2nix.mkPoetryApplication;
+          pythoneda = mkPoetryApplication rec {
+            pname = "pythoneda";
+            version = "0.0.alpha.1";
+            format = "pyproject";
+            projectDir = ./.;
+
+            pythonImportsCheck = [ ];
+
+            meta = with pkgs.lib; {
+              description = "Support for event-driven architectures in Python";
+              license = licenses.gpl3;
+              homepage = "https://github.com/rydnr/pythoneda";
+              maintainers = with maintainers; [ ];
+            };
           };
-          pythoneda = packages.pythoneda-0_0_1;
           default = packages.pythoneda;
           meta = with lib; {
             description = "Support for event-driven architectures in Python";

@@ -10,7 +10,7 @@ import json
 import logging
 from typing import Dict
 
-class Server(PrimaryPort):
+class GrpcServer(PrimaryPort):
 
     _default_insecure_port = '[::]:50051'
 
@@ -22,7 +22,11 @@ class Server(PrimaryPort):
             self._insecure_port = self.__class__._default_insecure_port
 
     @property
-    def insecure_port() -> str:
+    def app(self):
+        return self._app
+
+    @property
+    def insecure_port(self) -> str:
         return self._insecure_port
 
     def priority(self) -> int:

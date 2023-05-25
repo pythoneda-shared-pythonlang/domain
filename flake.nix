@@ -18,29 +18,28 @@
         python = pkgs.python3;
         pythonPackages = python.pkgs;
         inherit (poetry2nix.legacyPackages.${system}) mkPoetryApplication;
+        description = "Support for event-driven architectures in Python";
+        license = pkgs.lib.licenses.gpl3;
+        maintainers = with pkgs.lib.maintainers; [ ];
       in rec {
         packages = {
-          pythoneda = mkPoetryApplication rec {
+          pythoneda = pythonPackages.buildPythonPackage rec {
             pname = "pythoneda";
             version = "0.0.alpha.1";
-            format = "pyproject";
             projectDir = ./.;
+            src = ./.;
+
+            propagatedBuildInputs = with pythonPackages; [ grpcio requests ];
 
             pythonImportsCheck = [ ];
 
             meta = with pkgs.lib; {
-              description = "Support for event-driven architectures in Python";
-              license = licenses.gpl3;
-              homepage = "https://github.com/rydnr/pythoneda";
-              maintainers = with maintainers; [ ];
+              inherit description license homepage maintainers;
             };
           };
           default = packages.pythoneda;
           meta = with lib; {
-            description = "Support for event-driven architectures in Python";
-            license = licenses.gpl3;
-            homepage = "https://github.com/rydnr/pythoneda";
-            maintainers = with maintainers; [ ];
+            inherit description license homepage maintainers;
           };
         };
         defaultPackage = packages.default;

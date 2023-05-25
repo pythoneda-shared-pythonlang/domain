@@ -3,7 +3,7 @@ setup(
     name = "pythoneda",
     packages = ["PythonEDA/domain", "PythonEDA/infrastructure", "PythonEDA/application"],
 #    packages = find_packages(),
-    version = "0.0.1a1",
+    version = "0.0.1a2",
     description = "Support for event-driven architectures in Python",
     author = "rydnr",
     author_email = "github@acm-sl.org",

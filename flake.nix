@@ -31,6 +31,8 @@
 
             propagatedBuildInputs = with pythonPackages; [ grpcio requests ];
 
+            checkInputs = with pythonPackages; [ pytest ];
+
             pythonImportsCheck = [ ];
 
             meta = with pkgs.lib; {

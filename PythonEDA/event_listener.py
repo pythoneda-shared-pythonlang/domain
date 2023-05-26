@@ -1,5 +1,5 @@
-from domain.event import Event
-from domain.unsupported_event import UnsupportedEvent
+from PythonEDA.event import Event
+from PythonEDA.unsupported_event import UnsupportedEvent
 
 import inspect
 from typing import List,Type

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from application.bootstrap import get_interfaces, get_implementations
+from PythonEDA.application.bootstrap import get_interfaces, get_implementations
 
 import asyncio
 import importlib
@@ -10,7 +10,7 @@ import os
 import sys
 from typing import Callable, Dict
 
-class PythonEDAApplication():
+class PythonEDA():
 
     _singleton = None
 
@@ -23,7 +23,7 @@ class PythonEDAApplication():
 
     @classmethod
     async def main(cls):
-        cls._singleton = PythonEDAApplication()
+        cls._singleton = PythonEDA()
         mappings = {}
         for port in cls.get_port_interfaces():
             implementations = get_implementations(port)
@@ -36,7 +36,7 @@ class PythonEDAApplication():
         EventListener.find_listeners()
         EventEmitter.register_receiver(cls._singleton)
         loop = asyncio.get_running_loop()
-        loop.run_until_complete(await PythonEDAApplication.instance().accept_input())
+        loop.run_until_complete(await PythonEDA.instance().accept_input())
 
     @classmethod
     def get_port_interfaces(cls):
@@ -52,7 +52,7 @@ class PythonEDAApplication():
         return primaryPort().priority()
 
     async def accept_input(self):
-        for primaryPort in sorted(self.get_primary_ports(), key=PythonEDAApplication.delegate_priority):
+        for primaryPort in sorted(self.get_primary_ports(), key=PythonEDA.delegate_priority):
             port = primaryPort()
             await port.accept(self)
 
@@ -79,7 +79,7 @@ class PythonEDAApplication():
     def get_log_config(cls) -> Callable:
         result = None
 
-        spec = importlib.util.spec_from_file_location("_log_config", os.path.join("src", os.path.join("infrastructure", f"_log_config.py")))
+        spec = importlib.util.spec_from_file_location("_log_config", os.path.join("PythonEDA", os.path.join("infrastructure", f"_log_config.py")))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         entry = {}
@@ -87,12 +87,12 @@ class PythonEDAApplication():
         if callable(configure_logging_function):
             result = configure_logging_function
         else:
-            print(f"Error in pythoneda/src/infrastructure/_log_config.py: configure_logging")
+            print(f"Error in PythonEDA/infrastructure/_log_config.py: configure_logging")
         return result
 
-from domain.event import Event
-from domain.event_emitter import EventEmitter
-from domain.event_listener import EventListener
-from domain.port import Port
-from domain.ports import Ports
-from domain.primary_port import PrimaryPort
+from PythonEDA.event import Event
+from PythonEDA.event_emitter import EventEmitter
+from PythonEDA.event_listener import EventListener
+from PythonEDA.port import Port
+from PythonEDA.ports import Ports
+from PythonEDA.primary_port import PrimaryPort

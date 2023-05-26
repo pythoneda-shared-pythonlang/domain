@@ -1,4 +1,4 @@
-from domain.value_object import attribute, primary_key_attribute, ValueObject
+from PythonEDA.value_object import attribute, primary_key_attribute, ValueObject
 
 
 class EntityInProgress(ValueObject):

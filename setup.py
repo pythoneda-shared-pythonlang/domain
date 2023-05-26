@@ -1,9 +1,9 @@
 from distutils.core import setup
 setup(
     name = "pythoneda",
-    packages = ["PythonEDA/domain", "PythonEDA/infrastructure", "PythonEDA/application"],
+    packages = ["."],
 #    packages = find_packages(),
-    version = "0.0.1a3",
+    version = "0.0.1a4",
     description = "Support for event-driven architectures in Python",
     author = "rydnr",
     author_email = "github@acm-sl.org",

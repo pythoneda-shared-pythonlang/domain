@@ -1,4 +1,4 @@
-from domain.event import Event
+from PythonEDA.event import Event
 
 class EventEmitter:
 

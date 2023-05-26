@@ -1,4 +1,4 @@
-from domain.value_object import ValueObject
+from PythonEDA.value_object import ValueObject
 
 
 class Entity(ValueObject):

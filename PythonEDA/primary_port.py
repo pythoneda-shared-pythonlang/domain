@@ -1,4 +1,4 @@
-from domain.port import Port
+from PythonEDA.port import Port
 
 class PrimaryPort(Port):
     """

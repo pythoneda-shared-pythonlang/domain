@@ -1,4 +1,4 @@
-from domain.formatting import Formatting
+from PythonEDA.formatting import Formatting
 
 import functools
 from datetime import datetime

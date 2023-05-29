@@ -28,7 +28,9 @@
             version = "0.0.1a4";
             projectDir = ./.;
             src = ./.;
+            format = "pyproject";
 
+            nativeBuildInputs = [ pkgs.poetry ];
             propagatedBuildInputs = with pythonPackages; [ grpcio requests ];
 
             checkInputs = with pythonPackages; [ pytest ];

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pythoneda"
-version = "0.0.1a4"
+version = "0.0.1a5"
 description = "Support for EDA applications in Python"
 authors = ["rydnr <github@acm-sl.org>"]
 readme = "README.md"
@@ -8,8 +8,6 @@ packages = [{include = "PythonEDA"}]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-requests = "^2.28.1"
-grpcio = "^1.41.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0"
@@ -17,6 +15,3 @@ pytest = "^7.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-generate-grpc = "scripts.make_grpc:main"

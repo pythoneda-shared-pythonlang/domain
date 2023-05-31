@@ -20,12 +20,13 @@
         inherit (poetry2nix.legacyPackages.${system}) mkPoetryApplication;
         description = "Support for event-driven architectures in Python";
         license = pkgs.lib.licenses.gpl3;
+        homepage = "https://github.com/pythoneda/base";
         maintainers = with pkgs.lib.maintainers; [ ];
       in rec {
         packages = {
           pythoneda = pythonPackages.buildPythonPackage rec {
             pname = "pythoneda";
-            version = "0.0.1a6";
+            version = "0.0.1a7";
             projectDir = ./.;
             src = ./.;
             format = "pyproject";

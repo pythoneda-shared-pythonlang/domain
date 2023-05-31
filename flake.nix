@@ -25,13 +25,13 @@
         packages = {
           pythoneda = pythonPackages.buildPythonPackage rec {
             pname = "pythoneda";
-            version = "0.0.1a5";
+            version = "0.0.1a6";
             projectDir = ./.;
             src = ./.;
             format = "pyproject";
 
             nativeBuildInputs = [ pkgs.poetry ];
-            propagatedBuildInputs = with pythonPackages; [ grpcio requests ];
+            propagatedBuildInputs = with pythonPackages; [ ];
 
             checkInputs = with pythonPackages; [ pytest ];
 

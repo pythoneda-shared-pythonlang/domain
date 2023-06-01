@@ -26,7 +26,7 @@
         packages = {
           pythoneda = pythonPackages.buildPythonPackage rec {
             pname = "pythoneda";
-            version = "0.0.1a7";
+            version = "0.0.1a8";
             projectDir = ./.;
             src = ./.;
             format = "pyproject";

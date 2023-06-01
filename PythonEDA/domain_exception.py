@@ -1,7 +1,7 @@
 """
-PythonEDA/event.py
+PythonEDA/domain_exception.py
 
-This file defines the Event class.
+This file defines the DomainException class.
 
 Copyright (C) 2023-today rydnr's PythonEDA
 
@@ -20,23 +20,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from PythonEDA.value_object import ValueObject
 
-
-class Event(ValueObject):
+class DomainException(Exception, ValueObject):
     """
-    The base event class.
+    The parent class of all domain exceptions.
 
-    Class name: Event
+    Class name: Exception
 
     Responsibilities:
-        - Represents a change in the system state.
-        - It's the only way to communicate among PythonEDA domains.
+        - Represents an error in a domain.
+        - Subclasses should provide as much context as possible.
 
     Collaborators:
-        - EventEmitter: Emits Events.
-        - EventListener: Listens to Events.
+        - Exception: Python's built-in exception class.
+        - ValueObject: Overrides Python's default methods.
     """
+
     def __init__(self):
         """
-        Creates a new event instance.
+        Creates a new DomainException instance.
         """
         super().__init__()

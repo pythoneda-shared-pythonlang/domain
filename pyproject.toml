@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "pythoneda"
-version = "0.0.1a8"
+version = "0.0.1a9"
 description = "Support for EDA applications in Python"
 authors = ["rydnr <github@acm-sl.org>"]
 readme = "README.md"
 homepage = "https://github.com/pythoneda/base"
-packages = [{include = "PythonEDA"}]
+packages = [{include = "pythoneda"}]
 
 [tool.poetry.dependencies]
 python = "^3.6"

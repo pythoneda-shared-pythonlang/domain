@@ -2,7 +2,7 @@
   description = "Support for event-driven architectures in Python";
 
   inputs = rec {
-    nixos.url = "github:NixOS/nixpkgs/nixos-22.11";
+    nixos.url = "github:NixOS/nixpkgs/nixos-23.05";
     flake-utils.url = "github:numtide/flake-utils/v1.0.0";
     poetry2nix = {
       url = "github:nix-community/poetry2nix/v1.28.0";
@@ -15,26 +15,24 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixos { inherit system; };
-        python = pkgs.python3;
-        pythonPackages = python.pkgs;
-        inherit (poetry2nix.legacyPackages.${system}) mkPoetryApplication;
         description = "Support for event-driven architectures in Python";
         license = pkgs.lib.licenses.gpl3;
         homepage = "https://github.com/pythoneda/base";
         maintainers = with pkgs.lib.maintainers; [ ];
-      in rec {
-        packages = {
-          pythoneda = pythonPackages.buildPythonPackage rec {
-            pname = "pythoneda";
-            version = "0.0.1a8";
+        nixpkgsRelease = "nixos-23.05";
+        shared = import ./nix-shared/shared.nix;
+        pythoneda-base-for = { version, python }:
+          python.pkgs.buildPythonPackage rec {
+            pname = "pythoneda-base";
+            inherit version;
             projectDir = ./.;
             src = ./.;
             format = "pyproject";
 
-            nativeBuildInputs = [ pkgs.poetry ];
-            propagatedBuildInputs = with pythonPackages; [ ];
+            nativeBuildInputs = with python.pkgs; [ poetry-core wheel build ];
+            propagatedBuildInputs = with python.pkgs; [ ];
 
-            checkInputs = with pythonPackages; [ pytest ];
+            checkInputs = with python.pkgs; [ pytest ];
 
             pythonImportsCheck = [ ];
 
@@ -42,17 +40,56 @@
               inherit description license homepage maintainers;
             };
           };
-          default = packages.pythoneda;
-          meta = with lib; {
-            inherit description license homepage maintainers;
+        pythoneda-base-0_0_1a9-for = python:
+          pythoneda-base-for {
+            version = "0.0.1a9";
+            inherit python;
           };
+      in rec {
+        packages = rec {
+          pythoneda-base-0_0_1a9-python38 =
+            pythoneda-base-0_0_1a9-for pkgs.python38;
+          pythoneda-base-0_0_1a9-python39 =
+            pythoneda-base-0_0_1a9-for pkgs.python39;
+          pythoneda-base-0_0_1a9-python310 =
+            pythoneda-base-0_0_1a9-for pkgs.python310;
+          pythoneda-base-0_0_1a9-python311 =
+            pythoneda-base-0_0_1a9-for pkgs.python311;
+          pythoneda-base-latest-python38 = pythoneda-base-0_0_1a9-python38;
+          pythoneda-base-latest-python39 = pythoneda-base-0_0_1a9-python39;
+          pythoneda-base-latest-python310 = pythoneda-base-0_0_1a9-python310;
+          pythoneda-base-latest-python311 = pythoneda-base-0_0_1a9-python311;
+          pythoneda-base-latest = pythoneda-base-latest-python311;
+          default = pythoneda-base-latest;
         };
         defaultPackage = packages.default;
-        devShell = pkgs.mkShell {
-          buildInputs = with pkgs.python3Packages; [ packages.default ];
-        };
-        shell = flake-utils.lib.mkShell {
-          packages = system: [ self.packages.${system}.default ];
+        devShells = rec {
+          pythoneda-base-0_0_1a9-python38 = shared.devShell-for {
+            package = packages.pythoneda-base-0_0_1a9-python38;
+            python = pkgs.python38;
+            inherit pkgs nixpkgsRelease;
+          };
+          pythoneda-base-0_0_1a9-python39 = shared.devShell-for {
+            package = packages.pythoneda-base-0_0_1a9-python39;
+            python = pkgs.python39;
+            inherit pkgs nixpkgsRelease;
+          };
+          pythoneda-base-0_0_1a9-python310 = shared.devShell-for {
+            package = packages.pythoneda-base-0_0_1a9-python310;
+            python = pkgs.python310;
+            inherit pkgs nixpkgsRelease;
+          };
+          pythoneda-base-0_0_1a9-python311 = shared.devShell-for {
+            package = packages.pythoneda-base-0_0_1a9-python311;
+            python = pkgs.python311;
+            inherit pkgs nixpkgsRelease;
+          };
+          pythoneda-base-latest-python38 = pythoneda-base-0_0_1a9-python38;
+          pythoneda-base-latest-python39 = pythoneda-base-0_0_1a9-python39;
+          pythoneda-base-latest-python310 = pythoneda-base-0_0_1a9-python310;
+          pythoneda-base-latest-python311 = pythoneda-base-0_0_1a9-python311;
+          pythoneda-base-latest = pythoneda-base-latest-python311;
+          default = pythoneda-base-latest;
         };
       });
 }

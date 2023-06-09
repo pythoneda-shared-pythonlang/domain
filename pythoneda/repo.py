@@ -1,7 +1,7 @@
 """
-PythonEDA/domain_exception.py
+pythoneda/repo.py
 
-This file defines the DomainException class.
+This script defines the Repo class.
 
 Copyright (C) 2023-today rydnr's PythonEDA
 
@@ -18,25 +18,33 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from PythonEDA.value_object import ValueObject
+from pythoneda.port import Port
 
-class DomainException(Exception, ValueObject):
+class Repo(Port):
     """
-    The parent class of all domain exceptions.
+    A repository for a specific entity class.
 
-    Class name: Exception
+    Class name: Repo
 
     Responsibilities:
-        - Represents an error in a domain.
-        - Subclasses should provide as much context as possible.
+        - Provides access to persisted Entities.
 
     Collaborators:
-        - Exception: Python's built-in exception class.
-        - ValueObject: Overrides Python's default methods.
+        - Entity: The items persisted outside.
     """
+    def __init__(self, entityClass):
+        """
+        Creates a new instance.
+        :param entityClass: The associated Entity class.
+        :type entityClass: Type[Entity]
+        """
+        self._entity_class = entityClass
 
-    def __init__(self):
+    @property
+    def entity_class(self):
         """
-        Creates a new DomainException instance.
+        Retrieves the associated Entity class.
+        :return: Such class.
+        :rtype: Type[Entity]
         """
-        super().__init__()
+        return self._entity_class

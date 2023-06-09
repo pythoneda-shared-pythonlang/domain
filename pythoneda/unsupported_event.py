@@ -1,5 +1,5 @@
 """
-PythonEDA/unsupported_event.py
+pythoneda/unsupported_event.py
 
 This script defines the UnsupportedEvent class.
 
@@ -18,7 +18,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from PythonEDA/domain_exception import DomainException
+from pythoneda.domain_exception import DomainException
+
+import gettext
+
+_ = gettext.gettext
 
 class UnsupportedEvent(DomainException):
     """
@@ -38,4 +42,4 @@ class UnsupportedEvent(DomainException):
         :param event: The unsupported event.
         :type event: str
         """
-        super().__init__(f'Unsupported event: {event}')
+        super().__init__(f_('Unsupported event: {event}'))

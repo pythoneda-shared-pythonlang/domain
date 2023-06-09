@@ -1,5 +1,5 @@
 """
-PythonEDA/entity_in_progress.py
+pythoneda/entity_in_progress.py
 
 This script defines the EntityInProgress class.
 
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from PythonEDA.value_object import attribute, primary_key_attribute, ValueObject
+from pythoneda.value_object import attribute, primary_key_attribute, ValueObject
 
 
 class EntityInProgress(ValueObject):

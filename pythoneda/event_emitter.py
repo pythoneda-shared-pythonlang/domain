@@ -1,5 +1,5 @@
 """
-PythonEDA/event_emitter.py
+pythoneda/event_emitter.py
 
 This script defines the EventEmitter class.
 
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from PythonEDA.event import Event
+from pythoneda.event import Event
 
 class EventEmitter:
     """

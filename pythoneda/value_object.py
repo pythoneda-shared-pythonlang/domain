@@ -1,5 +1,5 @@
 """
-value_object.py
+pythoneda/value_object.py
 
 This script contains the ValueObject class and some decorators.
 
@@ -18,8 +18,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from PythonEDA.formatting import Formatting
-from PythonEDA.sensitive_value import SensitiveValue
+from pythoneda.formatting import Formatting
+from pythoneda.sensitive_value import SensitiveValue
 
 import functools
 from datetime import datetime

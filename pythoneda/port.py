@@ -1,7 +1,7 @@
 """
-PythonEDA/entity.py
+pythoneda/port.py
 
-This script defines the Entity class.
+This script defines the Port class.
 
 Copyright (C) 2023-today rydnr's PythonEDA
 
@@ -18,26 +18,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from PythonEDA.value_object import ValueObject
-
-
-class Entity(ValueObject):
+class Port():
     """
-    Represents an Entity: something meaningful, unique, with set of attributes, and, in good designs, behavior.
+    Represents a primary or secondary port.
 
-    Class name: Entity
+    Class name: Port
 
     Responsibilities:
-        - Defines uniqueness constraints.
-        - A cohesive group of related attribute values.
-        - Specifies attributes, including primary key's and those used for filtering, using ValueObject's decorators.
+        - They are interfaces that get implemented by adapters in the infrastructure layer.
+        - Port implementations interact with the outside.
 
     Collaborators:
-        - ValueObject: Provides attribute decorators, and __str__(), repr__(), __eq__() and __hash__().
-        - Repo: To rebuild them from persistence layers.
+        - Adapter implementations in the infrastructure layer.
+        - Application that resolve Ports with adapters when running the bounded context.
+        - Ports maintain a registry of Port instances.
     """
-    def __init__(self):
+    def __init__():
         """
-        Creates a new Entity instance.
+        Creates a new instance.
         """
         super().__init__()

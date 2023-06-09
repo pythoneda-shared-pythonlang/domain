@@ -1,5 +1,5 @@
 """
-PythonEDA/formatting.py
+pythoneda/formatting.py
 
 This file defines the Formatting class.
 

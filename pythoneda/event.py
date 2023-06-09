@@ -1,7 +1,7 @@
 """
-PythonEDA/port.py
+pythoneda/event.py
 
-This script defines the Port class.
+This file defines the Event class.
 
 Copyright (C) 2023-today rydnr's PythonEDA
 
@@ -18,23 +18,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-class Port():
-    """
-    Represents a primary or secondary port.
+from pythoneda.value_object import ValueObject
 
-    Class name: Port
+
+class Event(ValueObject):
+    """
+    The base event class.
+
+    Class name: Event
 
     Responsibilities:
-        - They are interfaces that get implemented by adapters in the infrastructure layer.
-        - Port implementations interact with the outside.
+        - Represents a change in the system state.
+        - It's the only way to communicate among PythonEDA domains.
 
     Collaborators:
-        - Adapter implementations in the infrastructure layer.
-        - Application that resolve Ports with adapters when running the bounded context.
-        - Ports maintain a registry of Port instances.
+        - EventEmitter: Emits Events.
+        - EventListener: Listens to Events.
     """
-    def __init__():
+    def __init__(self):
         """
-        Creates a new instance.
+        Creates a new event instance.
         """
         super().__init__()

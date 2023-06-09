@@ -1,5 +1,5 @@
 """
-PythonEDA/sensitive_value.py
+pythoneda/sensitive_value.py
 
 This file defines the SensitiveValue class.
 

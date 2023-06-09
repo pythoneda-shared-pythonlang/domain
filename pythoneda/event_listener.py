@@ -1,5 +1,5 @@
 """
-PythonEDA/event_listener.py
+pythoneda/event_listener.py
 
 This script defines the EventListener class.
 
@@ -18,8 +18,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from PythonEDA.event import Event
-from PythonEDA.unsupported_event import UnsupportedEvent
+from pythoneda.event import Event
+from pythoneda.unsupported_event import UnsupportedEvent
 
 import inspect
 from typing import List,Type

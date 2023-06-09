@@ -1,5 +1,5 @@
 """
-PythonEDA/ports.py
+pythoneda/ports.py
 
 This script defines the Ports class.
 
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from PythonEDA.port import Port
+from pythoneda.port import Port
 
 import importlib
 from typing import Dict

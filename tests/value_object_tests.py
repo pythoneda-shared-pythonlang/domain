@@ -1,7 +1,7 @@
 """
-value_object_tests.py
+tests/value_object_tests.py
 
-This script contains tests for PythonEDA/value_object.py
+This script contains tests for pythoneda/value_object.py
 
 Copyright (C) 2023-today rydnr's PythonEDA
 
@@ -25,7 +25,7 @@ base_folder = str(Path(__file__).resolve().parent.parent)
 if base_folder not in sys.path:
     sys.path.append(base_folder)
 
-from PythonEDA.value_object import attribute, primary_key_attribute, sensitive, ValueObject
+from pythoneda.value_object import attribute, primary_key_attribute, sensitive, ValueObject
 
 import asyncio
 import re

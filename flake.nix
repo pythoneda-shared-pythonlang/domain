@@ -20,7 +20,7 @@
         homepage = "https://github.com/pythoneda/base";
         maintainers = with pkgs.lib.maintainers; [ ];
         nixpkgsRelease = "nixos-23.05";
-        shared = import ./nix-shared/shared.nix;
+        shared = import ./nix/devShells.nix;
         pythoneda-base-for = { version, python }:
           python.pkgs.buildPythonPackage rec {
             pname = "pythoneda-base";
@@ -40,54 +40,54 @@
               inherit description license homepage maintainers;
             };
           };
-        pythoneda-base-0_0_1a9-for = python:
+        pythoneda-base-0_0_1a10-for = python:
           pythoneda-base-for {
-            version = "0.0.1a9";
+            version = "0.0.1a10";
             inherit python;
           };
       in rec {
         packages = rec {
-          pythoneda-base-0_0_1a9-python38 =
-            pythoneda-base-0_0_1a9-for pkgs.python38;
-          pythoneda-base-0_0_1a9-python39 =
-            pythoneda-base-0_0_1a9-for pkgs.python39;
-          pythoneda-base-0_0_1a9-python310 =
-            pythoneda-base-0_0_1a9-for pkgs.python310;
-          pythoneda-base-0_0_1a9-python311 =
-            pythoneda-base-0_0_1a9-for pkgs.python311;
-          pythoneda-base-latest-python38 = pythoneda-base-0_0_1a9-python38;
-          pythoneda-base-latest-python39 = pythoneda-base-0_0_1a9-python39;
-          pythoneda-base-latest-python310 = pythoneda-base-0_0_1a9-python310;
-          pythoneda-base-latest-python311 = pythoneda-base-0_0_1a9-python311;
+          pythoneda-base-0_0_1a10-python38 =
+            pythoneda-base-0_0_1a10-for pkgs.python38;
+          pythoneda-base-0_0_1a10-python39 =
+            pythoneda-base-0_0_1a10-for pkgs.python39;
+          pythoneda-base-0_0_1a10-python310 =
+            pythoneda-base-0_0_1a10-for pkgs.python310;
+          pythoneda-base-0_0_1a10-python311 =
+            pythoneda-base-0_0_1a10-for pkgs.python311;
+          pythoneda-base-latest-python38 = pythoneda-base-0_0_1a10-python38;
+          pythoneda-base-latest-python39 = pythoneda-base-0_0_1a10-python39;
+          pythoneda-base-latest-python310 = pythoneda-base-0_0_1a10-python310;
+          pythoneda-base-latest-python311 = pythoneda-base-0_0_1a10-python311;
           pythoneda-base-latest = pythoneda-base-latest-python311;
           default = pythoneda-base-latest;
         };
         defaultPackage = packages.default;
         devShells = rec {
-          pythoneda-base-0_0_1a9-python38 = shared.devShell-for {
-            package = packages.pythoneda-base-0_0_1a9-python38;
+          pythoneda-base-0_0_1a10-python38 = shared.devShell-for {
+            package = packages.pythoneda-base-0_0_1a10-python38;
             python = pkgs.python38;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-base-0_0_1a9-python39 = shared.devShell-for {
-            package = packages.pythoneda-base-0_0_1a9-python39;
+          pythoneda-base-0_0_1a10-python39 = shared.devShell-for {
+            package = packages.pythoneda-base-0_0_1a10-python39;
             python = pkgs.python39;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-base-0_0_1a9-python310 = shared.devShell-for {
-            package = packages.pythoneda-base-0_0_1a9-python310;
+          pythoneda-base-0_0_1a10-python310 = shared.devShell-for {
+            package = packages.pythoneda-base-0_0_1a10-python310;
             python = pkgs.python310;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-base-0_0_1a9-python311 = shared.devShell-for {
-            package = packages.pythoneda-base-0_0_1a9-python311;
+          pythoneda-base-0_0_1a10-python311 = shared.devShell-for {
+            package = packages.pythoneda-base-0_0_1a10-python311;
             python = pkgs.python311;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-base-latest-python38 = pythoneda-base-0_0_1a9-python38;
-          pythoneda-base-latest-python39 = pythoneda-base-0_0_1a9-python39;
-          pythoneda-base-latest-python310 = pythoneda-base-0_0_1a9-python310;
-          pythoneda-base-latest-python311 = pythoneda-base-0_0_1a9-python311;
+          pythoneda-base-latest-python38 = pythoneda-base-0_0_1a10-python38;
+          pythoneda-base-latest-python39 = pythoneda-base-0_0_1a10-python39;
+          pythoneda-base-latest-python310 = pythoneda-base-0_0_1a10-python310;
+          pythoneda-base-latest-python311 = pythoneda-base-0_0_1a10-python311;
           pythoneda-base-latest = pythoneda-base-latest-python311;
           default = pythoneda-base-latest;
         };

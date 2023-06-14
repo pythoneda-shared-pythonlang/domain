@@ -44,6 +44,8 @@ class DomainException(Exception, ValueObject):
     def __init__(self, txt: str, *args):
         """
         Creates a new DomainException instance.
+        :param txt: The exception message.
+        :type txt: str
         """
         super().__init__(args)
         self._message = txt

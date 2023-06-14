@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from pythoneda.port import Port
 
+from typing import Dict, List
+
+
 class Repo(Port):
     """
     A repository for a specific entity class.
@@ -48,3 +51,42 @@ class Repo(Port):
         :rtype: Type[Entity]
         """
         return self._entity_class
+
+    def find_by_id(self, id: str):
+        """Must be implemented by subclasses"""
+        raise NotImplementedError("find_by_id() must be implemented by subclasses")
+
+
+    def find_by_attribute(self, attributeName: str, attributeValue: str):
+        """Must be implemented by subclasses"""
+        raise NotImplementedError("find_by_attribute() must be implemented by subclasses")
+
+
+    def filter(self, dictionary: Dict):
+        """Must be implemented by subclasses"""
+        raise NotImplementedError("filter() must be implemented by subclasses")
+
+
+    def insert(self, item):
+        """Must be implemented by subclasses"""
+        raise NotImplementedError("insert() must be implemented by subclasses")
+
+
+    def update(self, item):
+        """Must be implemented by subclasses"""
+        raise NotImplementedError("update() must be implemented by subclasses")
+
+
+    def delete(self, id: str):
+        """Must be implemented by subclasses"""
+        raise NotImplementedError("delete() must be implemented by subclasses")
+
+
+    def find_by_pk(self, pk: Dict):
+        """Must be implemented by subclasses"""
+        raise NotImplementedError("find_by_pk() must be implemented by subclasses")
+
+
+    def list(self) -> List:
+        """Must be implemented by subclasses"""
+        raise NotImplementedError("list() must be implemented by subclasses")

@@ -46,7 +46,7 @@
             '';
 
             meta = with pkgs.lib; {
-              inherit description license homepage maintainers;
+              inherit description homepage license maintainers wheelName;
             };
           };
         pythoneda-base-0_0_1a13-for = python:

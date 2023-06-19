@@ -18,7 +18,7 @@ rec {
     echo;
     echo " Thank you for using PythonEDA, and for your appreciation of free software.";
     echo;
-    echo "export PYTHONPATH=$(python $PYTHONEDABASE/scripts/fix_pythonpath.py)";
+    export PYTHONPATH="$(python $PYTHONEDABASE/scripts/fix_pythonpath.py)";
   '';
   devShell-for = { package, pythoneda-base, python, pkgs, nixpkgsRelease }:
     pkgs.mkShell {

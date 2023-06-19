@@ -1,9 +1,10 @@
 rec {
-  shellHook-for = { package, python, nixpkgsRelease }: ''
+  shellHook-for = { package, pythoneda-base, python, nixpkgsRelease }: ''
     export PNAME="${package.pname}";
     export PVERSION="${package.version}";
     export PYVERSION="${python.name}";
     export NIXPKGSRELEASE="${nixpkgsRelease}";
+    export PYTHONEDABASE="${pythoneda-base}";
     export PS1="\033[37m[\[\033[01;33m\]\$PNAME-\$PVERSION\033[01;37m|\033[01;32m\]\$PYVERSION\]\033[37m|\[\033[00m\]\[\033[01;34m\]\W\033[37m]\033[31m\$\[\033[00m\] ";
     echo;
     echo -e " \033[32m             _   _                          \033[35m_\033[0m";
@@ -17,10 +18,12 @@ rec {
     echo;
     echo " Thank you for using PythonEDA, and for your appreciation of free software.";
     echo;
+    echo "export PYTHONPATH=$(python $PYTHONEDABASE/scripts/fix_pythonpath.py)";
   '';
-  devShell-for = { package, python, pkgs, nixpkgsRelease }:
+  devShell-for = { package, pythoneda-base, python, pkgs, nixpkgsRelease }:
     pkgs.mkShell {
       buildInputs = [ package ];
-      shellHook = shellHook-for { inherit package python nixpkgsRelease; };
+      shellHook =
+        shellHook-for { inherit package pythoneda-base python nixpkgsRelease; };
     };
 }

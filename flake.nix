@@ -40,8 +40,9 @@
             pythonImportsCheck = [ "pythoneda" ];
 
             postInstall = ''
-              mkdir $out/dist
+              mkdir $out/dist $out/scripts
               cp dist/${wheelName} $out/dist
+              cp scripts/* $out/scripts
               jq ".url = \"$out/dist/${wheelName}\"" $out/lib/python${pythonMajorMinorVersion}/site-packages/${pnameWithUnderscores}-${version}.dist-info/direct_url.json > temp.json && mv temp.json $out/lib/python${pythonMajorMinorVersion}/site-packages/${pnameWithUnderscores}-${version}.dist-info/direct_url.json
             '';
 
@@ -75,21 +76,25 @@
         devShells = rec {
           pythoneda-base-0_0_1a14-python38 = shared.devShell-for {
             package = packages.pythoneda-base-0_0_1a14-python38;
+            pythoneda-base = packages.pythoneda-base-0_0_1a14-python38;
             python = pkgs.python38;
             inherit pkgs nixpkgsRelease;
           };
           pythoneda-base-0_0_1a14-python39 = shared.devShell-for {
             package = packages.pythoneda-base-0_0_1a14-python39;
+            pythoneda-base = packages.pythoneda-base-0_0_1a14-python39;
             python = pkgs.python39;
             inherit pkgs nixpkgsRelease;
           };
           pythoneda-base-0_0_1a14-python310 = shared.devShell-for {
             package = packages.pythoneda-base-0_0_1a14-python310;
+            pythoneda-base = packages.pythoneda-base-0_0_1a14-python310;
             python = pkgs.python310;
             inherit pkgs nixpkgsRelease;
           };
           pythoneda-base-0_0_1a14-python311 = shared.devShell-for {
             package = packages.pythoneda-base-0_0_1a14-python311;
+            pythoneda-base = packages.pythoneda-base-0_0_1a14-python311;
             python = pkgs.python311;
             inherit pkgs nixpkgsRelease;
           };

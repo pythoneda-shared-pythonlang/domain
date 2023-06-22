@@ -14,7 +14,7 @@ rec {
     echo -e " \033[32m| |_) | |_| | |_| | | | (_) | | | |\033[34m  __/\033[35m (_| |\033[36m (_| |\033[36mhttps://github.com/pythoneda\033[0m";
     echo -e " \033[32m| .__/ \__, |\__|_| |_|\___/|_| |_|\033[34m\___|\033[35m\__,_|\033[36m\__,_|\033[37mhttps://patreon.com/rydnr\033[0m";
     echo -e " \033[32m| |     __/ |\033[0m";
-    echo -e " \033[32m|_|    |___/\033[0m";
+    echo -e " \033[32m|_|    |___/               \033[33mBASE\033[0m";
     echo;
     echo " Thank you for using PythonEDA, and for your appreciation of free software.";
     echo;

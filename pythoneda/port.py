@@ -33,7 +33,7 @@ class Port():
         - Application that resolve Ports with adapters when running the bounded context.
         - Ports maintain a registry of Port instances.
     """
-    def __init__():
+    def __init__(self):
         """
         Creates a new instance.
         """

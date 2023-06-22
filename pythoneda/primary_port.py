@@ -32,7 +32,7 @@ class PrimaryPort(Port):
     Collaborators:
         - Application that resolves the adapters for PrimaryPorts.
     """
-    def __init__():
+    def __init__(self):
         """
         Creates a new instance.
         """

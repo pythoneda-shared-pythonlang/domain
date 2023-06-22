@@ -21,10 +21,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from pythoneda.event import Event
 from pythoneda.unsupported_event import UnsupportedEvent
 
+import abc
 import inspect
 from typing import List,Type
 
-class EventListener:
+class EventListener(abc.ABC):
     """
     This class can listen / receive events.
 
@@ -43,6 +44,7 @@ class EventListener:
     _listeners = {}
 
     @classmethod
+    @abc.abstractmethod
     def supported_events(cls) -> List[Type[Event]]:
         """
         Retrieves the list of supported event classes.

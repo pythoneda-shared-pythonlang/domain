@@ -12,6 +12,6 @@ PythonEDA/base provides:
 
 Currenty domains modelled so far:
 - [Python packages](https://github.com/pythoneda/python-packages "Python packages' github repository"): Domain of Python packages.
-- [Git repositories](https://github.com/pythoneda/git-repositories "Git repositories' github repository"): Domain of Git repositories.
+- [Git Python](https://github.com/pythoneda/git-python "git-python' github repository"): Domain of Git repositories of Python projects.
 - [Nix flakes' github repository](https://github.com/pythoneda/nix-flakes "Nix flakes' github repository"): Domain of Nix flakes.
 

@@ -19,20 +19,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from pythoneda.event import Event
+from pythoneda.port import Port
 
-class EventEmitter:
+import abc
+
+class EventEmitter(Port, abc.ABC):
     """
-    Is able to emit Events.
+    Port able to emit Events.
 
     Class name: EventEmitter
 
     Responsibilities:
         - Emit events.
-        - Maintain a registry of receivers or listeners.
 
     Collaborators:
         - Event: The events being emitted.
-        - EventListener: Those interested in receiving events.
     """
     _receivers = []
 
@@ -65,8 +66,7 @@ class EventEmitter:
         if receiver in EventEmitter._receivers:
             EventEmitter._receivers.remove(receiver)
 
-    @classmethod
-    async def emit(cls, event: Event):
+    async def emit(self, event: Event):
         """
         Emits given event.
         :param event: The event to emit.

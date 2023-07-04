@@ -33,7 +33,7 @@ import unittest
 
 class ValueObjectTests(unittest.IsolatedAsyncioTestCase):
     """
-    Defines tests for PythonEDA/value_object.py.
+    Defines tests for pythoneda/value_object.py.
 
     Class name: ValueObjectTests
 

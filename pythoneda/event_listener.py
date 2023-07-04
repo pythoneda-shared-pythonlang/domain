@@ -78,18 +78,36 @@ class EventListener(abc.ABC):
         return result
 
     @classmethod
+    def get_all_subclasses(cls, parentClass: Type) -> List[Type]:
+        """
+        Retrieves all subclasses of given parent class.
+        :param parentClass: The parent class.
+        :type parentClass: Type
+        :return: The subclasses.
+        :rtype: List[Type]
+        """
+        result = []
+
+        for subclass in parentClass.__subclasses__():
+            result.append(subclass)
+            result.extend(cls.get_all_subclasses(subclass))
+
+        return result
+
+    @classmethod
     def find_listeners(cls):
         """
         Finds all available listeners.
         :return: Such list.
         :rtype: List
         """
-        for subclass in EventListener.__subclasses__():
-            for eventClass in subclass.supported_events():
-                methodName = cls.build_method_name(eventClass)
-                method = getattr(subclass, methodName)
-                if inspect.ismethod(method) and inspect.isclass(method.__self__):
-                    EventListener.listen(subclass, eventClass)
+        for subclass in cls.get_all_subclasses(EventListener):
+            if abc.ABC not in subclass.__bases__:
+                for eventClass in subclass.supported_events():
+                    methodName = cls.build_method_name(eventClass)
+                    method = getattr(subclass, methodName)
+                    if inspect.ismethod(method) and inspect.isclass(method.__self__):
+                        EventListener.listen(subclass, eventClass)
 
     @classmethod
     def listen(cls, listener: Type, eventClass: Type[Event]):
@@ -120,17 +138,20 @@ class EventListener(abc.ABC):
         for listener in listeners:
             methodName = cls.build_method_name(event.__class__)
             method = getattr(listener, methodName)
-            result.append(await method(event))
+            if method is None:
+                logging.getLogger(cls.__name__).error(f'{listener.__class__} does not define {methodName}(event: Event)')
+            else:
+                result.append(await method(event))
         return result
 
 
     @classmethod
     def build_method_name(cls, eventClass: Type) -> str:
         """
-        Builds a method name for given event class, by prepending the Event class name with "listen".
+        Builds a method name for given event class, by prepending the Event class name with "listen_".
         :param eventClass: The event class.
         :type eventClass: Type[Event]
         :return: The method name.
         :rtype: str
         """
-        return f'listen{eventClass.__name__}'
+        return f'listen_{eventClass.__name__}'

@@ -18,8 +18,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda.value_object import ValueObject
-
+from pythoneda.value_object import internal_attribute, ValueObject
+from typing import List
 
 class Event(ValueObject):
     """
@@ -35,8 +35,33 @@ class Event(ValueObject):
         - EventEmitter: Emits Events.
         - EventListener: Listens to Events.
     """
-    def __init__(self):
+    def __init__(self, previousEventIds:List[str]=None, reconstructedId:str=None, reconstructedPreviousEventIds:List[str]=None):
         """
-        Creates a new event instance.
+        Creates a new Event instance.
+        :param previousEventIds: The id of previous events, if any.
+        :type previousEventIds: List[str]
+        :param reconstructedId: An optional id (in case it's a reconstruction of an external event).
+        :type reconstructedId: str
+        :param reconstructedPreviousEventIds: The id of the events this one is response to, in case it's a reconstruction of an external event.
+        :type reconstructedPreviousEventIds: str
         """
         super().__init__()
+        if reconstructedId:
+            self._id = reconstructedId
+        if previousEventIds:
+            self._previous_event_ids = previousEventIds
+        elif reconstructedPreviousEventIds:
+            self._previous_event_ids = reconstructedPreviousEventIds
+
+    @property
+    @internal_attribute
+    def previous_event_ids(self) -> List[str]:
+        """
+        Retrieves the id of the events this one is response to, if any.
+        :return: Such ids.
+        :rtype: List[str]
+        """
+        if hasattr(self, "_previous_event_ids"):
+            return self._previous_event_ids
+        else:
+            return None

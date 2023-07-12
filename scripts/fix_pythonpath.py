@@ -28,8 +28,6 @@ import pkgutil
 import sys
 from typing import Callable, Dict, List
 
-
-
 class FixPythonPath():
     """
     A script to rewrite PYTHONPATH to use local repositories.
@@ -62,29 +60,26 @@ class FixPythonPath():
         paths_to_remove = []
         paths_to_remove.append(Path(__file__).resolve().parent)
         paths_to_add = []
-        break_second_folder_loop = False
         break_python_module_loop = False
-        for first_folder in [ name for name in os.listdir(root_folder) if os.path.isdir(os.path.join(root_folder, name)) ]:
+        for first_folder in [ name for name in os.listdir(root_folder) if os.path.isdir(os.path.join(root_folder, name)) and name.startswith('pythoneda') ]:
             for second_folder in [ name for name in os.listdir(root_folder / first_folder) if os.path.isdir(root_folder / first_folder / name) ]:
                 for python_module in [ name for name in os.listdir(root_folder / first_folder / second_folder) if os.path.isdir(root_folder / first_folder / second_folder / name) and (root_folder / first_folder / second_folder / name / "__init__.py").exists() ]:
                     for path in sys.path:
                         if os.path.isdir(Path(path) / python_module):
                             paths_to_add.append(str(root_folder / first_folder / second_folder))
                             break_python_module_loop = True
-                            break_second_folder_loop = True
                             paths_to_remove.append(path)
                             break
                     if break_python_module_loop:
                         break_python_module_loop = False
                         break
-                if break_second_folder_loop:
-                    break_second_folder_loop = False
-                    break
 
         for path in paths_to_remove:
-            sys.path.remove(str(path))
+            if str(path) in sys.path:
+                sys.path.remove(str(path))
         for path in paths_to_add:
-            sys.path.append(str(path))
+            if not str(path) in sys.path:
+                sys.path.append(str(path))
 
     @classmethod
     def print_syspath(cls) -> str:
@@ -93,7 +88,7 @@ class FixPythonPath():
         :return: The PYTHONPATH variable.
         :rtype: str
         """
-        result = ":".join(sys.path)
+        result = "\n".join(sys.path)
         print(result)
         return result
 

@@ -88,7 +88,7 @@ class FixPythonPath():
         :return: The PYTHONPATH variable.
         :rtype: str
         """
-        result = "\n".join(sys.path)
+        result = ":".join(sys.path)
         print(result)
         return result
 

@@ -18,15 +18,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda.formatting import Formatting
-from pythoneda.sensitive_value import SensitiveValue
-
-import functools
+import collections.abc
 from datetime import datetime
+import functools
 import importlib
 import inspect
+from pythoneda.formatting import Formatting
+from pythoneda.sensitive_value import SensitiveValue
 import re
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 import uuid
 
 _primary_key_attributes = {}
@@ -283,6 +283,26 @@ class ValueObject:
         super().__init_subclass__(**kwargs)
         cls._propagate_attributes()
 
+    def _is_collection(self, value:Any) -> bool:
+        """
+        Checks if given value is a collection.
+        :param value: The value.
+        :type value: typing.Any
+        :return: True in such case.
+        :rtype: bool
+        """
+        return not isinstance(value, str) and isinstance(value, collections.abc.Collection)
+
+    def _is_json_compatible(self, obj:Any) -> bool:
+        """
+        Checks if given value is already compatible with json format.
+        :param obj: The value.
+        :type obj: typing.Any
+        :return: True in such case.
+        :rtype: bool
+        """
+        return callable(getattr(obj, 'to_json', None))
+
     def __str__(self) -> str:
         """
         Provides a string representation of this instance.
@@ -305,10 +325,12 @@ class ValueObject:
                 if hasattr(self, attr):
                     value = getattr(self, attr)
                     if value:
-                        if isinstance(value, str):
-                            internal.append(f'"{attr}": "{value}"')
-                        else:
+                        if self._is_collection(value):
                             internal.append(f'"{attr}": {value}')
+                        elif self._is_json_compatible(value):
+                            internal.append(f'"{attr}": {value.to_json()}')
+                        else:
+                            internal.append(f'"{attr}": "{value}"')
             internal.append(f'"class": "{self.__class__.__name__}"')
             aux.append('"_internal": { ' + ', '.join(internal) + ' }')
 

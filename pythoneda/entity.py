@@ -20,7 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from pythoneda.value_object import ValueObject
 
-
 class Entity(ValueObject):
     """
     Represents an Entity: something meaningful, unique, with set of attributes, and, in good designs, behavior.

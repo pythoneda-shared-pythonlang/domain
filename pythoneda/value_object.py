@@ -433,6 +433,14 @@ class ValueObject:
 
         return result
 
+    def to_json(self) -> Dict:
+        """
+        Provides a JSON representation of this instance.
+        :return: The JSON representing this instance.
+        :rtype: str
+        """
+        return json.loads(self.__str__())
+
     def __str__(self) -> str:
         """
         Provides a string representation of this instance.

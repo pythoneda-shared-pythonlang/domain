@@ -79,16 +79,26 @@ class ValueObjectTests(unittest.TestCase):
         pattern = r'\{ "pk": "\[hidden\]", "_internal": \{ "id": ".*?", "created": ".*?", "updated": null, "class": "__main__.Sample4" \} \}'
 
         self.assertTrue(re.match(pattern, str(sut)), f'{str(sut)} does not match {str(pattern)}')
-        print(f'pk -> {sut.__class__.primary_key()}')
+        self.assertTrue('pk' in sut.__class__.primary_key())
+
+    def test_bug_when_sensitive_decorator_is_not_the_innermost_decorator(self):
+        """
+        Tests the @sensitive_attribute can be used with a primary_key attribute.
+        """
+        sut = ValueObjectTests.Sample5("myPassword")
+
+        pattern = r'\{ "pk": "\[hidden\]", "_internal": \{ "id": ".*?", "created": ".*?", "updated": null, "class": "__main__.Sample5" \} \}'
+
+        self.assertTrue(re.match(pattern, str(sut)), f'{str(sut)} does not match {str(pattern)}')
         self.assertTrue('pk' in sut.__class__.primary_key())
 
     def test_to_json_with_list(self):
         """
         Tests whether the str() representation of instances with list attributes is JSON compliant.
         """
-        sut = ValueObjectTests.Sample5("a string", [ "another string" ], { "internalKey": 13 })
+        sut = ValueObjectTests.Sample6("a string", [ "another string" ], { "internalKey": 13 })
 
-        pattern = r'\{ "a_string": "a string", "a_list": \[ "another string" \], "_internal": \{ "a_dict": \{ "internalKey" \}, "id": ".*?", "created": ".*?", "updated": null, "class": "__main__.Sample5" \} \}'
+        pattern = r'\{ "a_string": "a string", "a_list": \[ "another string" \], "_internal": \{ "a_dict": \{ "internalKey" \}, "id": ".*?", "created": ".*?", "updated": null, "class": "__main__.Sample6" \} \}'
 
         self.assertTrue(re.match(pattern, str(sut)), f'{str(sut)} does not match {str(pattern)}')
 
@@ -132,12 +142,24 @@ class ValueObjectTests(unittest.TestCase):
             self._pk = sensitiveValue
 
         @property
+        @primary_key_attribute
+        @sensitive
+        def pk(self):
+            return self._pk
+
+    class Sample5(ValueObject):
+
+        def __init__(self, sensitiveValue: str):
+            super().__init__()
+            self._pk = sensitiveValue
+
+        @property
         @sensitive
         @primary_key_attribute
         def pk(self):
             return self._pk
 
-    class Sample5(ValueObject):
+    class Sample6(ValueObject):
 
         def __init__(self, aString:str, aList:List, aDict:Dict):
             super().__init__()

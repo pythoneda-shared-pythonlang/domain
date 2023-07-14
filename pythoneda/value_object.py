@@ -81,8 +81,7 @@ def _add_to_pending(func:Callable, lst:List, name:str=""):
     :param lst: The dictionary to store the function.
     :type lst: List
     """
-    if not func.__code__ in lst:
-        lst.append(func.__code__)
+    lst.append(func.__code__)
 
 def _add_wrapper(func):
     """
@@ -129,7 +128,7 @@ def primary_key_attribute(func):
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
     from pythoneda.value_object import _pending_primary_key_properties
-    _add_to_pending(wrapper, _pending_primary_key_properties, "primary_key")
+    _add_to_pending(wrapper, _pending_primary_key_properties, "primary_key_properties")
     _add_wrapper(wrapper)
 
     return wrapper
@@ -162,11 +161,13 @@ def internal_attribute(func):
     _add_to_pending(wrapper, _pending_internal_properties, "internal_properties")
     return wrapper
 
-def _process_pending_properties(cls:type):
+def _process_pending_properties(cls:type, delete:bool=False):
     """
     Processes all pending properties of given class.
     :param cls: The class holding the properties.
     :type cls: type
+    :param delete: Whether to clean up pending properties at the end or not.
+    :type delete: bool
     """
     from pythoneda.value_object import _properties, _pending_properties, _primary_key_properties, _pending_primary_key_properties, _filter_properties, _pending_filter_properties, _internal_properties, _pending_internal_properties
     source = {}
@@ -181,12 +182,13 @@ def _process_pending_properties(cls:type):
     dest["_internal_properties"] = _internal_properties
     for name, prop in cls.__dict__.items():
         if isinstance(prop, property):
-            for key in [ "_properties", "_primary_key_properties", "_filter_properties", "_internal_properties" ]:
+            for key in [ "_primary_key_properties", "_filter_properties", "_properties", "_internal_properties" ]:
                 _process_pending_property(cls, prop, source[key], dest[key], key)
-    del _pending_properties
-    del _pending_filter_properties
-    del _pending_primary_key_properties
-    del _pending_internal_properties
+    if False:
+        del _pending_properties
+        del _pending_filter_properties
+        del _pending_primary_key_properties
+        del _pending_internal_properties
 
 def _process_pending_property(cls:type, prop:property, pending:List, properties:Dict, name:str=""):
     """
@@ -200,8 +202,8 @@ def _process_pending_property(cls:type, prop:property, pending:List, properties:
     :param properties: The final properties.
     :type properties: Dict
     """
+    cls_key = _build_cls_key(cls)
     if prop.fget.__code__ in pending:
-        cls_key = _build_cls_key(cls)
         aux = properties.get(cls_key, None)
         if not aux:
             aux = []
@@ -256,9 +258,8 @@ class ValueObject:
         result = []
         key = _build_cls_key(cls)
         from pythoneda.value_object import _primary_key_properties
-        print(f'** pk -> {_primary_key_properties}, key -> {key}')
         if key in _primary_key_properties.keys():
-            result = _primary_key_properties[key]
+            result = list(map(lambda p: p.fget.__name__, _primary_key_properties[key]))
         return result
 
     @classmethod
@@ -346,8 +347,8 @@ class ValueObject:
         """
         super().__init_subclass__(**kwargs)
         for current_parent in cls.mro():
-            _process_pending_properties(current_parent)
-        _process_pending_properties(cls)
+            _process_pending_properties(current_parent, False)
+        _process_pending_properties(cls, True)
         _propagate_properties(cls)
         cls_key = _build_cls_key(cls)
         from pythoneda.value_object import _internal_properties

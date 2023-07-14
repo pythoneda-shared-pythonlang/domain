@@ -115,6 +115,7 @@ def sensitive(func):
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return SensitiveValue(func(self, *args, **kwargs))
+    _add_wrapper(wrapper)
 
     return wrapper
 
@@ -254,7 +255,9 @@ class ValueObject:
         """
         result = []
         key = _build_cls_key(cls)
-        if key in _primary_key_properties:
+        from pythoneda.value_object import _primary_key_properties
+        print(f'** pk -> {_primary_key_properties}, key -> {key}')
+        if key in _primary_key_properties.keys():
             result = _primary_key_properties[key]
         return result
 

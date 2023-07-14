@@ -20,18 +20,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import sys
 from pathlib import Path
+import re
+from typing import Dict, List
+import unittest
 
 base_folder = str(Path(__file__).resolve().parent.parent)
 if base_folder not in sys.path:
     sys.path.append(base_folder)
 
-from pythoneda.value_object import attribute, primary_key_attribute, sensitive, ValueObject
+from pythoneda.value_object import attribute, internal_attribute, primary_key_attribute, sensitive, ValueObject
 
-import asyncio
-import re
-import unittest
-
-class ValueObjectTests(unittest.IsolatedAsyncioTestCase):
+class ValueObjectTests(unittest.TestCase):
     """
     Defines tests for pythoneda/value_object.py.
 
@@ -43,89 +42,123 @@ class ValueObjectTests(unittest.IsolatedAsyncioTestCase):
     Collaborators:
         - ValueObject: Some sample instances of a derived class are used in the tests.
     """
-    async def test_str_on_non_id_class(self):
+    def test_str_on_non_id_class(self):
         """
         Tests the behavior of __str__ on classes forgetting to call super().__init__()
         """
-        sut = Sample1("val1")
+        sut = ValueObjectTests.Sample1("val1")
 
-        self.assertEqual(str(sut), '{ "a1": "val1", "_internal": { "class": "Sample1" } }')
+        self.assertEqual(str(sut), '{ "a1": "val1", "_internal": { "id": null, "created": null, "updated": null, "class": "__main__.Sample1" } }')
 
-    async def test_str_on_id_class(self):
+    def test_str_on_id_class(self):
         """
         Tests the behavior of __str__ on classes which call super().__init__()
         """
-        sut = Sample2("val2")
+        sut = ValueObjectTests.Sample2("val2")
 
-        pattern = r'\{ "a2": "val2", "_internal": \{ "id": ".*?", "class": "Sample2", "created": ".*?" \} \}'
+        pattern = r'\{ "a2": "val2", "_internal": \{ "id": ".*?", "created": ".*?", "updated": null, "class": "__main__.Sample2" \} \}'
 
-        self.assertTrue(re.match(pattern, str(sut)))
+        self.assertTrue(re.match(pattern, str(sut)), f'{str(sut)} does not match {str(pattern)}')
 
-    async def test_sensitive_decorator_wraps_the_attribute(self):
+    def test_sensitive_decorator_wraps_the_attribute(self):
         """
         Tests the @sensitive actually wraps the value in a SensitiveValue instance.
         """
-        sut = Sample3("myPassword")
+        sut = ValueObjectTests.Sample3("myPassword")
 
-        pattern = r'\{ "pwd": "\[hidden\]", "_internal": \{ "id": ".*?", "class": "Sample3", "created": ".*?" \} \}'
+        pattern = r'\{ "pwd": "\[hidden\]", "_internal": \{ "id": ".*?", "created": ".*?", "updated": null, "class": "__main__.Sample3" \} \}'
 
         self.assertTrue(re.match(pattern, str(sut)), f'{str(sut)} does not match {str(pattern)}')
 
-    async def test_sensitive_decorator_can_coexist_with_a_primary_key_decorator(self):
+    def test_sensitive_decorator_can_coexist_with_a_primary_key_decorator(self):
         """
         Tests the @sensitive_attribute can be used with a primary_key attribute.
         """
-        sut = Sample4("myPassword")
+        sut = ValueObjectTests.Sample4("myPassword")
 
-        pattern = r'\{ "pk": "\[hidden\]", "_internal": \{ "id": ".*?", "class": "Sample4", "created": ".*?" \} \}'
+        pattern = r'\{ "pk": "\[hidden\]", "_internal": \{ "id": ".*?", "created": ".*?", "updated": null, "class": "__main__.Sample4" \} \}'
 
         self.assertTrue(re.match(pattern, str(sut)), f'{str(sut)} does not match {str(pattern)}')
+        print(f'pk -> {sut.__class__.primary_key()}')
         self.assertTrue('pk' in sut.__class__.primary_key())
 
-class Sample1(ValueObject):
+    def test_to_json_with_list(self):
+        """
+        Tests whether the str() representation of instances with list attributes is JSON compliant.
+        """
+        sut = ValueObjectTests.Sample5("a string", [ "another string" ], { "internalKey": 13 })
 
-    def __init__(self, a1):
-        self._a1 = a1
+        pattern = r'\{ "a_string": "a string", "a_list": \[ "another string" \], "_internal": \{ "a_dict": \{ "internalKey" \}, "id": ".*?", "created": ".*?", "updated": null, "class": "__main__.Sample5" \} \}'
 
-    @property
-    @attribute
-    def a1(self):
-        return self._a1
+        self.assertTrue(re.match(pattern, str(sut)), f'{str(sut)} does not match {str(pattern)}')
 
-class Sample2(ValueObject):
+    class Sample1(ValueObject):
 
-    def __init__(self, a2):
-        super().__init__();
-        self._a2 = a2
+        def __init__(self, a1):
+            self._a1 = a1
 
-    @property
-    @attribute
-    def a2(self):
-        return self._a2
+        @property
+        @attribute
+        def a1(self):
+            return self._a1
 
-class Sample3(ValueObject):
+    class Sample2(ValueObject):
 
-    def __init__(self, sensitiveValue: str):
-        super().__init__()
-        self._pwd = sensitiveValue
+        def __init__(self, a2):
+            super().__init__();
+            self._a2 = a2
 
-    @property
-    @sensitive
-    @attribute
-    def pwd(self):
-        return self._pwd
+        @property
+        @attribute
+        def a2(self):
+            return self._a2
 
-class Sample4(ValueObject):
+    class Sample3(ValueObject):
 
-    def __init__(self, sensitiveValue: str):
-        super().__init__()
-        self._pk = sensitiveValue
+        def __init__(self, sensitiveValue: str):
+            super().__init__()
+            self._pwd = sensitiveValue
 
-    @property
-    @sensitive
-    @primary_key_attribute
-    def pk(self):
-        return self._pk
+        @property
+        @sensitive
+        @attribute
+        def pwd(self):
+            return self._pwd
+
+    class Sample4(ValueObject):
+
+        def __init__(self, sensitiveValue: str):
+            super().__init__()
+            self._pk = sensitiveValue
+
+        @property
+        @sensitive
+        @primary_key_attribute
+        def pk(self):
+            return self._pk
+
+    class Sample5(ValueObject):
+
+        def __init__(self, aString:str, aList:List, aDict:Dict):
+            super().__init__()
+            self._a_string = aString
+            self._a_list = aList
+            self._a_dict = aDict
+
+        @property
+        @primary_key_attribute
+        def a_string(self) -> str:
+            return self._a_string
+
+        @property
+        @attribute
+        def a_list(self) -> List:
+            return self._a_list
+
+        @property
+        @internal_attribute
+        def a_dict(self) -> Dict:
+            return self._a_dict
 
 if __name__ == '__main__':
     unittest.main()

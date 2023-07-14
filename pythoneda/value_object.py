@@ -23,16 +23,24 @@ from datetime import datetime
 import functools
 import importlib
 import inspect
+import json
 from pythoneda.formatting import Formatting
 from pythoneda.sensitive_value import SensitiveValue
 import re
 from typing import Any, Callable, Dict, List
 import uuid
 
-_primary_key_attributes = {}
-_filter_attributes = {}
-_internal_attributes = {}
-_attributes = {}
+_primary_key_properties = {}
+_pending_primary_key_properties = []
+
+_filter_properties = {}
+_pending_filter_properties = []
+
+_internal_properties = {}
+_pending_internal_properties = []
+
+_properties = {}
+_pending_properties = []
 
 def _build_func_key(func):
     """
@@ -52,7 +60,8 @@ def _build_cls_key(cls):
     :return: A key.
     :rtype: str
     """
-    return cls.__module__
+
+    return f'{cls.__module__}.{cls.__name__}'
 
 def _classes_by_key(key):
     """
@@ -64,29 +73,25 @@ def _classes_by_key(key):
     """
     return [m[1] for m in inspect.getmembers(key, inspect.isclass)]
 
-def _add_to_dictionary(func: Callable, value, dictionary: Dict):
+def _add_to_pending(func:Callable, lst:List, name:str=""):
     """
-    Adds given function (specifically a derived value) in a dictionary.
-    :param func: The function.
-    :type func: callable
+    Adds given function (specifically a derived value) in a list.
     :param value: The value to annotate.
-    :type value: str, int, callable
-    :param dictionary: The dictionary to store the function.
-    :type dictionary: Dict
+    :type value: Callable
+    :param lst: The dictionary to store the function.
+    :type lst: List
     """
-    key = _build_func_key(func)
-    if not key in dictionary.keys():
-        dictionary[key] = []
-    if not value in dictionary[key]:
-        dictionary[key].append(value)
+    if not func.__code__ in lst:
+        lst.append(func.__code__)
 
-def _add_attribute(func):
+def _add_wrapper(func):
     """
-    Annotates given attribute getter.
-    :param func: The getter.
+    Annotates given property wrapper.
+    :param func: The wrapper.
     :type func: callable
     """
-    _add_to_dictionary(func, func.__name__, _attributes)
+    from pythoneda.value_object import _pending_properties
+    _add_to_pending(func, _pending_properties, "properties")
 
 def attribute(func):
     """
@@ -94,10 +99,10 @@ def attribute(func):
     :param func: The getter.
     :type func: callable
     """
-    _add_attribute(func)
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
+    _add_wrapper(wrapper)
 
     return wrapper
 
@@ -119,11 +124,12 @@ def primary_key_attribute(func):
     :param func: The getter function to wrap.
     :type func: callable
     """
-    _add_to_dictionary(func, func.__name__, _primary_key_attributes)
-    _add_attribute(func)
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
+    from pythoneda.value_object import _pending_primary_key_properties
+    _add_to_pending(wrapper, _pending_primary_key_properties, "primary_key")
+    _add_wrapper(wrapper)
 
     return wrapper
 
@@ -133,11 +139,12 @@ def filter_attribute(func):
     :param func: The getter function to wrap.
     :type func: callable
     """
-    _add_dictionary(func, func.__name__, _filter_attributes)
-    _add_attribute(func)
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
+    from pythoneda.value_object import _pending_filter_properties
+    _add_to_pending(wrapper, _pending_filter_properties, "filter_properties")
+    _add_wrapper(wrapper)
 
     return wrapper
 
@@ -147,12 +154,83 @@ def internal_attribute(func):
     :param func: The getter function to wrap.
     :type func: callable
     """
-    _add_to_dictionary(func, func.__name__, _internal_attributes)
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
-
+    from pythoneda.value_object import _pending_internal_properties
+    _add_to_pending(wrapper, _pending_internal_properties, "internal_properties")
     return wrapper
+
+def _process_pending_properties(cls:type):
+    """
+    Processes all pending properties of given class.
+    :param cls: The class holding the properties.
+    :type cls: type
+    """
+    from pythoneda.value_object import _properties, _pending_properties, _primary_key_properties, _pending_primary_key_properties, _filter_properties, _pending_filter_properties, _internal_properties, _pending_internal_properties
+    source = {}
+    source["_properties"] = _pending_properties
+    source["_primary_key_properties"] = _pending_primary_key_properties
+    source["_filter_properties"] = _pending_filter_properties
+    source["_internal_properties"] = _pending_internal_properties
+    dest = {}
+    dest["_properties"] = _properties
+    dest["_primary_key_properties"] = _primary_key_properties
+    dest["_filter_properties"] = _filter_properties
+    dest["_internal_properties"] = _internal_properties
+    for name, prop in cls.__dict__.items():
+        if isinstance(prop, property):
+            for key in [ "_properties", "_primary_key_properties", "_filter_properties", "_internal_properties" ]:
+                _process_pending_property(cls, prop, source[key], dest[key], key)
+    del _pending_properties
+    del _pending_filter_properties
+    del _pending_primary_key_properties
+    del _pending_internal_properties
+
+def _process_pending_property(cls:type, prop:property, pending:List, properties:Dict, name:str=""):
+    """
+    Processes a pending property.
+    :param cls: The class holding the property.
+    :type cls: type
+    :param prop: The property.
+    :type prop: property
+    :param pending: The pending properties.
+    :type pending: List
+    :param properties: The final properties.
+    :type properties: Dict
+    """
+    if prop.fget.__code__ in pending:
+        cls_key = _build_cls_key(cls)
+        aux = properties.get(cls_key, None)
+        if not aux:
+            aux = []
+        if not prop in aux:
+            aux.append(prop)
+        properties[cls_key] = aux
+
+def _propagate_properties(cls):
+    """
+    Propagates properties from given class' parents.
+    :param cls: The class holding the properties.
+    :type cls: type
+    """
+    from pythoneda.value_object import _properties, _primary_key_properties, _filter_properties, _internal_properties
+    cls_key = _build_cls_key(cls)
+    for current_parent in cls.mro():
+        parent_cls_key = _build_cls_key(current_parent)
+        for props in [ _properties, _primary_key_properties, _filter_properties ]:
+            if parent_cls_key in props.keys():
+                if cls_key not in props.keys():
+                    props[cls_key] = []
+                for prop in props[parent_cls_key]:
+                    if not prop in props[cls_key]:
+                        props[cls_key].append(prop)
+        if parent_cls_key in _internal_properties.keys():
+            if cls_key not in _internal_properties.keys():
+                _internal_properties[cls_key] = []
+            for prop in _internal_properties[parent_cls_key]:
+                if not prop in _internal_properties[cls_key]:
+                    _internal_properties[cls_key].append(prop)
 
 class ValueObject:
     """
@@ -176,8 +254,8 @@ class ValueObject:
         """
         result = []
         key = _build_cls_key(cls)
-        if key in _primary_key_attributes:
-            result = _primary_key_attributes[key]
+        if key in _primary_key_properties:
+            result = _primary_key_properties[key]
         return result
 
     @classmethod
@@ -189,8 +267,8 @@ class ValueObject:
         """
         result = []
         key = _build_cls_key(cls)
-        if key in _filter_attributes:
-            result = _filter_attributes[key]
+        if key in _filter_properties:
+            result = _filter_properties[key]
         return result
 
     @classmethod
@@ -200,12 +278,13 @@ class ValueObject:
         :return: The class attributes.
         :rtype: List
         """
+        from pythoneda.value_object import _properties, _internal_properties
         result = []
         key = _build_cls_key(cls)
-        if key in _attributes:
-            result = _attributes[key]
-        if key in _internal_attributes:
-            result = result + _internal_attributes[key]
+        if key in _properties:
+            result = _properties[key]
+        if key in _internal_properties:
+            result = result + _internal_properties[key]
         return result
 
     def __init__(self):
@@ -256,24 +335,6 @@ class ValueObject:
             return None
 
     @classmethod
-    def _propagate_attributes(cls):
-        """
-        Annotates this class' attributes among the descendants.
-        """
-        cls_key = _build_cls_key(cls)
-        for current_parent in cls.__bases__:
-            parent_cls_key = _build_cls_key(current_parent)
-            if parent_cls_key in _attributes.keys() or parent_cls_key in _internal_attributes.keys():
-                if parent_cls_key in _attributes.keys():
-                    if cls_key not in _attributes.keys():
-                        _attributes[cls_key] = _attributes[parent_cls_key].copy()
-                if parent_cls_key in _internal_attributes.keys():
-                    if cls_key in _internal_attributes.keys():
-                        _internal_attributes[cls_key] = _internal_attributes[cls_key] + _internal_attributes[parent_cls_key].copy()
-                    else:
-                        _internal_attributes[cls_key] = _internal_attributes[parent_cls_key].copy()
-
-    @classmethod
     def __init_subclass__(cls, **kwargs):
         """
         Initializes this class.
@@ -281,17 +342,12 @@ class ValueObject:
         :type kwargs: Dict
         """
         super().__init_subclass__(**kwargs)
-        cls._propagate_attributes()
-
-    def _is_collection(self, value:Any) -> bool:
-        """
-        Checks if given value is a collection.
-        :param value: The value.
-        :type value: typing.Any
-        :return: True in such case.
-        :rtype: bool
-        """
-        return not isinstance(value, str) and isinstance(value, collections.abc.Collection)
+        for current_parent in cls.mro():
+            _process_pending_properties(current_parent)
+        _process_pending_properties(cls)
+        _propagate_properties(cls)
+        cls_key = _build_cls_key(cls)
+        from pythoneda.value_object import _internal_properties
 
     def _is_json_compatible(self, obj:Any) -> bool:
         """
@@ -303,6 +359,76 @@ class ValueObject:
         """
         return callable(getattr(obj, 'to_json', None))
 
+    def _property_to_json(self, prop:property, includeNulls:bool=True) -> str:
+        """
+        Builds a json-compatible representation of given property.
+        :param prop: The property.
+        :type prop: Any
+        :param includeNulls: Whether to include nulls or not.
+        :type includeNulls: bool
+        :return: A json representation of given property.
+        :rtype: str
+        """
+        result = None
+        result = f'"{prop.fget.__name__}": {self._value_to_json(prop.fget(self), includeNulls)}'
+        return result
+
+    def _value_to_json(self, value:Any, includeNulls:bool=True) -> str:
+        """
+        Builds a json-compatible representation of given value.
+        :param value: The value.
+        :type value: Any
+        :param includeNulls: Whether to include nulls or not.
+        :type includeNulls: bool
+        :return: A json representation of given value.
+        :rtype: str
+        """
+        result = None
+        if callable(value):
+            value = value.fget(self)
+        if value:
+            if type(value) is list or type(value) is dict:
+                items = list(map(self._value_to_json, value))
+                if len(items) > 0:
+                    if type(value) is list:
+                        result = '[ ' + ', '.join(items) + ' ]'
+                    if type(value) is dict:
+                        result = '{ ' + ', '.join(items) + ' }'
+            elif self._is_json_compatible(value):
+                result = value.to_json()
+            else:
+                result = json.dumps(str(value))
+        elif includeNulls:
+            result = "null"
+        return result
+
+    def _property_to_json_excluding_nulls(self, prop:property) -> str:
+        """
+        Builds a json-compatible representation of given property, excluding nulls.
+        :param prop: The property.
+        :type prop: property
+        :return: A json representation of given attribute.
+        :rtype: str
+        """
+        return self._property_to_json(attribute, includeNulls=False)
+
+    def _properties_to_json(self, properties:List[property], includeNulls:bool=True) -> List[str]:
+        """
+        Builds a json-compatible representation of given attributes.
+        :param properties: The properties.
+        :type properties: List[property]
+        :param includeNulls: Whether to include nulls or not.
+        :type includeNulls: bool
+        :return: A list with the json representation of each attribute.
+        :rtype: List[str]
+        """
+        if includeNulls:
+            result = list(filter(lambda x: x is not None, map(self._property_to_json, properties)))
+        else:
+            result = list(filter(lambda x: x is not None, map(self._property_to_json_excluding_nulls, properties)))
+
+        return result
+
     def __str__(self) -> str:
         """
         Provides a string representation of this instance.
@@ -311,27 +437,12 @@ class ValueObject:
         """
         aux = []
         key = _build_cls_key(self.__class__)
-        if key in _attributes.keys():
-            for attr in _attributes[key]:
-                if hasattr(self, attr):
-                    value = getattr(self, attr)
-                    if callable(value):
-                        aux.append(f'"{attr}": "' + str(value.fget(self)) + '"')
-                    else:
-                        aux.append(f'"{attr}": "' + str(value) + '"')
-            internal = []
-        if key in _internal_attributes.keys():
-            for attr in _internal_attributes[key]:
-                if hasattr(self, attr):
-                    value = getattr(self, attr)
-                    if value:
-                        if self._is_collection(value):
-                            internal.append(f'"{attr}": {value}')
-                        elif self._is_json_compatible(value):
-                            internal.append(f'"{attr}": {value.to_json()}')
-                        else:
-                            internal.append(f'"{attr}": "{value}"')
-            internal.append(f'"class": "{self.__class__.__name__}"')
+        if key in _properties.keys():
+            aux = self._properties_to_json(_properties[key])
+        internal = []
+        if key in _internal_properties.keys():
+            internal = self._properties_to_json(_internal_properties[key])
+            internal.append(f'"class": "{self.__class__.__module__}.{self.__class__.__name__}"')
             aux.append('"_internal": { ' + ', '.join(internal) + ' }')
 
         if len(aux) > 0:
@@ -348,15 +459,17 @@ class ValueObject:
         :rtype: str
         """
         result = []
+        aux = []
         key = _build_cls_key(self.__class__)
-        if key in _primary_key_attributes.keys():
-            for attr in _primary_key_attributes[key]:
-                result.append(f"'{attr}': '" + str(getattr(self, f"_{attr}")) + "'")
+        if key in _primary_key_properties.keys():
+            aux = self._properties_to_json(_primary_key_properties[key], includeNulls=False)
 
-        if len(result) > 0:
-            return "{ " + ", ".join(result) + " }"
+        if len(aux) > 0:
+            result = '{ ' + ', '.join(aux) + ' }'
         else:
-            return super().__repr__()
+            result = super().__repr__()
+
+        return result
 
     def __setattr__(self, varName, varValue):
         """
@@ -367,8 +480,8 @@ class ValueObject:
         :type varValue: int, bool, str, type
         """
         key = _build_cls_key(self.__class__)
-        if key in _attributes.keys():
-            if varName in [x for x in _attributes[key]]:
+        if key in _properties.keys():
+            if varName in [x for x in _properties[key]]:
                 self._updated = datetime.now()
         super(ValueObject, self).__setattr__(varName, varValue)
 

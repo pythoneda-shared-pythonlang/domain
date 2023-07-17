@@ -50,74 +50,74 @@
               inherit description homepage license maintainers;
             };
           };
-        pythoneda-shared-pythoneda-0_0_1a22-for = python:
+        pythoneda-shared-pythoneda-0_0_1a23-for = python:
           pythoneda-shared-pythoneda-for {
-            version = "0.0.1a22";
+            version = "0.0.1a23";
             inherit python;
           };
       in rec {
         defaultPackage = packages.default;
         devShells = rec {
           default = pythoneda-shared-pythoneda-latest;
-          pythoneda-shared-pythoneda-0_0_1a22-python38 = shared.devShell-for {
-            package = packages.pythoneda-shared-pythoneda-0_0_1a22-python38;
+          pythoneda-shared-pythoneda-0_0_1a23-python38 = shared.devShell-for {
+            package = packages.pythoneda-shared-pythoneda-0_0_1a23-python38;
             pythoneda-shared-pythoneda =
-              packages.pythoneda-shared-pythoneda-0_0_1a22-python38;
+              packages.pythoneda-shared-pythoneda-0_0_1a23-python38;
             python = pkgs.python38;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-shared-pythoneda-0_0_1a22-python39 = shared.devShell-for {
-            package = packages.pythoneda-shared-pythoneda-0_0_1a22-python39;
+          pythoneda-shared-pythoneda-0_0_1a23-python39 = shared.devShell-for {
+            package = packages.pythoneda-shared-pythoneda-0_0_1a23-python39;
             pythoneda-shared-pythoneda =
-              packages.pythoneda-shared-pythoneda-0_0_1a22-python39;
+              packages.pythoneda-shared-pythoneda-0_0_1a23-python39;
             python = pkgs.python39;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-shared-pythoneda-0_0_1a22-python310 = shared.devShell-for {
-            package = packages.pythoneda-shared-pythoneda-0_0_1a22-python310;
+          pythoneda-shared-pythoneda-0_0_1a23-python310 = shared.devShell-for {
+            package = packages.pythoneda-shared-pythoneda-0_0_1a23-python310;
             pythoneda-shared-pythoneda =
-              packages.pythoneda-shared-pythoneda-0_0_1a22-python310;
+              packages.pythoneda-shared-pythoneda-0_0_1a23-python310;
             python = pkgs.python310;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-shared-pythoneda-0_0_1a22-python311 = shared.devShell-for {
-            package = packages.pythoneda-shared-pythoneda-0_0_1a22-python311;
+          pythoneda-shared-pythoneda-0_0_1a23-python311 = shared.devShell-for {
+            package = packages.pythoneda-shared-pythoneda-0_0_1a23-python311;
             pythoneda-shared-pythoneda =
-              packages.pythoneda-shared-pythoneda-0_0_1a22-python311;
+              packages.pythoneda-shared-pythoneda-0_0_1a23-python311;
             python = pkgs.python311;
             inherit pkgs nixpkgsRelease;
           };
           pythoneda-shared-pythoneda-latest =
             pythoneda-shared-pythoneda-latest-python311;
           pythoneda-shared-pythoneda-latest-python38 =
-            pythoneda-shared-pythoneda-0_0_1a22-python38;
+            pythoneda-shared-pythoneda-0_0_1a23-python38;
           pythoneda-shared-pythoneda-latest-python39 =
-            pythoneda-shared-pythoneda-0_0_1a22-python39;
+            pythoneda-shared-pythoneda-0_0_1a23-python39;
           pythoneda-shared-pythoneda-latest-python310 =
-            pythoneda-shared-pythoneda-0_0_1a22-python310;
+            pythoneda-shared-pythoneda-0_0_1a23-python310;
           pythoneda-shared-pythoneda-latest-python311 =
-            pythoneda-shared-pythoneda-0_0_1a22-python311;
+            pythoneda-shared-pythoneda-0_0_1a23-python311;
         };
         packages = rec {
           default = pythoneda-shared-pythoneda-latest;
-          pythoneda-shared-pythoneda-0_0_1a22-python38 =
-            pythoneda-shared-pythoneda-0_0_1a22-for pkgs.python38;
-          pythoneda-shared-pythoneda-0_0_1a22-python39 =
-            pythoneda-shared-pythoneda-0_0_1a22-for pkgs.python39;
-          pythoneda-shared-pythoneda-0_0_1a22-python310 =
-            pythoneda-shared-pythoneda-0_0_1a22-for pkgs.python310;
-          pythoneda-shared-pythoneda-0_0_1a22-python311 =
-            pythoneda-shared-pythoneda-0_0_1a22-for pkgs.python311;
+          pythoneda-shared-pythoneda-0_0_1a23-python38 =
+            pythoneda-shared-pythoneda-0_0_1a23-for pkgs.python38;
+          pythoneda-shared-pythoneda-0_0_1a23-python39 =
+            pythoneda-shared-pythoneda-0_0_1a23-for pkgs.python39;
+          pythoneda-shared-pythoneda-0_0_1a23-python310 =
+            pythoneda-shared-pythoneda-0_0_1a23-for pkgs.python310;
+          pythoneda-shared-pythoneda-0_0_1a23-python311 =
+            pythoneda-shared-pythoneda-0_0_1a23-for pkgs.python311;
           pythoneda-shared-pythoneda-latest =
             pythoneda-shared-pythoneda-latest-python311;
           pythoneda-shared-pythoneda-latest-python38 =
-            pythoneda-shared-pythoneda-0_0_1a22-python38;
+            pythoneda-shared-pythoneda-0_0_1a23-python38;
           pythoneda-shared-pythoneda-latest-python39 =
-            pythoneda-shared-pythoneda-0_0_1a22-python39;
+            pythoneda-shared-pythoneda-0_0_1a23-python39;
           pythoneda-shared-pythoneda-latest-python310 =
-            pythoneda-shared-pythoneda-0_0_1a22-python310;
+            pythoneda-shared-pythoneda-0_0_1a23-python310;
           pythoneda-shared-pythoneda-latest-python311 =
-            pythoneda-shared-pythoneda-0_0_1a22-python311;
+            pythoneda-shared-pythoneda-0_0_1a23-python311;
         };
       });
 }

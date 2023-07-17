@@ -16,7 +16,7 @@
         maintainers = with pkgs.lib.maintainers; [ ];
         nixpkgsRelease = "nixos-23.05";
         shared = import ./nix/shared.nix;
-        pythonpackage = "pythoneda-shared-pythoneda";
+        pythonpackage = "pythoneda";
         pythoneda-shared-pythoneda-for = { version, python }:
           let
             pythonVersionParts = builtins.splitVersion python.version;
@@ -87,6 +87,8 @@
             python = pkgs.python311;
             inherit pkgs nixpkgsRelease;
           };
+          pythoneda-shared-pythoneda-latest =
+            pythoneda-shared-pythoneda-latest-python311;
           pythoneda-shared-pythoneda-latest-python38 =
             pythoneda-shared-pythoneda-0_0_1a21-python38;
           pythoneda-shared-pythoneda-latest-python39 =
@@ -95,8 +97,6 @@
             pythoneda-shared-pythoneda-0_0_1a21-python310;
           pythoneda-shared-pythoneda-latest-python311 =
             pythoneda-shared-pythoneda-0_0_1a21-python311;
-          pythoneda-shared-pythoneda-latest =
-            pythoneda-shared-pythoneda-latest-python310;
         };
         packages = rec {
           default = pythoneda-shared-pythoneda-latest;

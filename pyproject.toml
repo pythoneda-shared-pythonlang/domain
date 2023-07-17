@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "pythoneda-base"
+name = "pythoneda"
 version = "0.0.1a19"
 description = "Support for EDA applications in Python"
 authors = ["rydnr <github@acm-sl.org>"]
 readme = "README.md"
-homepage = "https://github.com/pythoneda/base"
+homepage = "https://github.com/pythoneda-shared/pythoneda"
 packages = [{include = "pythoneda"}]
 
 [tool.poetry.dependencies]

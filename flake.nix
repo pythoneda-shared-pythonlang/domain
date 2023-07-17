@@ -17,7 +17,7 @@
         nixpkgsRelease = "nixos-23.05";
         shared = import ./nix/shared.nix;
         pythonpackage = "pythoneda";
-        pythoneda-shared-pythoneda-for = { version, python }:
+        pythoneda-shared-pythoneda-for = { python, version }:
           let
             pythonVersionParts = builtins.splitVersion python.version;
             pythonMajorVersion = builtins.head pythonVersionParts;

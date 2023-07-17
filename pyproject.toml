@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pythoneda"
+name = "pythoneda-shared-pythoneda"
 version = "0.0.1a20"
 description = "Support for EDA applications in Python"
 authors = ["rydnr <github@acm-sl.org>"]

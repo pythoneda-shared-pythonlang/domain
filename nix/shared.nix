@@ -1,5 +1,6 @@
 rec {
-  shellHook-for = { package, pythoneda, python, nixpkgsRelease }:
+  shellHook-for =
+    { package, pythoneda-shared-pythoneda, python, nixpkgsRelease }:
     let
       pythonVersionParts = builtins.splitVersion python.version;
       pythonMajorVersion = builtins.head pythonVersionParts;
@@ -11,7 +12,7 @@ rec {
       export PYNAME="${python.name}";
       export PYVERSION="${pythonMajorMinorVersion}";
       export NIXPKGSRELEASE="${nixpkgsRelease}";
-      export PYTHONEDA="${pythoneda}";
+      export PYTHONEDA="${pythoneda-shared-pythoneda}";
       export PS1="\033[37m[\[\033[01;33m\]\$PNAME-\$PVERSION\033[01;37m|\033[01;32m\]\$PYNAME\]\033[37m|\[\033[00m\]\[\033[01;34m\]\W\033[37m]\033[31m\$\[\033[00m\] ";
       echo;
       echo -e " \033[32m             _   _                          \033[35m_\033[0m";
@@ -27,10 +28,12 @@ rec {
       echo;
       export PYTHONPATH="$(python $PYTHONEDA/scripts/fix_pythonpath.py)";
     '';
-  devShell-for = { package, pythoneda, python, pkgs, nixpkgsRelease }:
+  devShell-for =
+    { package, pythoneda-shared-pythoneda, python, pkgs, nixpkgsRelease }:
     pkgs.mkShell {
       buildInputs = [ package ];
-      shellHook =
-        shellHook-for { inherit package pythoneda python nixpkgsRelease; };
+      shellHook = shellHook-for {
+        inherit package pythoneda-shared-pythoneda python nixpkgsRelease;
+      };
     };
 }

@@ -9,7 +9,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixos { inherit system; };
-        pname = "pythoneda";
+        pname = "pythoneda-shared-pythoneda";
         description = "Support for event-driven architectures in Python";
         license = pkgs.lib.licenses.gpl3;
         homepage = "https://github.com/pythoneda-shared/pythoneda";
@@ -17,7 +17,7 @@
         nixpkgsRelease = "nixos-23.05";
         shared = import ./nix/shared.nix;
         pythonpackage = "pythoneda-shared-pythoneda";
-        pythoneda-for = { version, python }:
+        pythoneda-shared-pythoneda-for = { version, python }:
           let
             pythonVersionParts = builtins.splitVersion python.version;
             pythonMajorVersion = builtins.head pythonVersionParts;
@@ -50,56 +50,74 @@
               inherit description homepage license maintainers;
             };
           };
-        pythoneda-0_0_1a21-for = python:
-          pythoneda-for {
+        pythoneda-shared-pythoneda-0_0_1a21-for = python:
+          pythoneda-shared-pythoneda-for {
             version = "0.0.1a21";
             inherit python;
           };
       in rec {
         defaultPackage = packages.default;
         devShells = rec {
-          pythoneda-0_0_1a21-python38 = shared.devShell-for {
-            package = packages.pythoneda-0_0_1a21-python38;
-            pythoneda = packages.pythoneda-0_0_1a21-python38;
+          default = pythoneda-shared-pythoneda-latest;
+          pythoneda-shared-pythoneda-0_0_1a21-python38 = shared.devShell-for {
+            package = packages.pythoneda-shared-pythoneda-0_0_1a21-python38;
+            pythoneda-shared-pythoneda =
+              packages.pythoneda-shared-pythoneda-0_0_1a21-python38;
             python = pkgs.python38;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-0_0_1a21-python39 = shared.devShell-for {
-            package = packages.pythoneda-0_0_1a21-python39;
-            pythoneda = packages.pythoneda-0_0_1a21-python39;
+          pythoneda-shared-pythoneda-0_0_1a21-python39 = shared.devShell-for {
+            package = packages.pythoneda-shared-pythoneda-0_0_1a21-python39;
+            pythoneda-shared-pythoneda =
+              packages.pythoneda-shared-pythoneda-0_0_1a21-python39;
             python = pkgs.python39;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-0_0_1a21-python310 = shared.devShell-for {
-            package = packages.pythoneda-0_0_1a21-python310;
-            pythoneda = packages.pythoneda-0_0_1a21-python310;
+          pythoneda-shared-pythoneda-0_0_1a21-python310 = shared.devShell-for {
+            package = packages.pythoneda-shared-pythoneda-0_0_1a21-python310;
+            pythoneda-shared-pythoneda =
+              packages.pythoneda-shared-pythoneda-0_0_1a21-python310;
             python = pkgs.python310;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-0_0_1a21-python311 = shared.devShell-for {
-            package = packages.pythoneda-0_0_1a21-python311;
-            pythoneda = packages.pythoneda-0_0_1a21-python311;
+          pythoneda-shared-pythoneda-0_0_1a21-python311 = shared.devShell-for {
+            package = packages.pythoneda-shared-pythoneda-0_0_1a21-python311;
+            pythoneda-shared-pythoneda =
+              packages.pythoneda-shared-pythoneda-0_0_1a21-python311;
             python = pkgs.python311;
             inherit pkgs nixpkgsRelease;
           };
-          pythoneda-latest-python38 = pythoneda-0_0_1a21-python38;
-          pythoneda-latest-python39 = pythoneda-0_0_1a21-python39;
-          pythoneda-latest-python310 = pythoneda-0_0_1a21-python310;
-          pythoneda-latest-python311 = pythoneda-0_0_1a21-python311;
-          pythoneda-latest = pythoneda-latest-python310;
-          default = pythoneda-latest;
+          pythoneda-shared-pythoneda-latest-python38 =
+            pythoneda-shared-pythoneda-0_0_1a21-python38;
+          pythoneda-shared-pythoneda-latest-python39 =
+            pythoneda-shared-pythoneda-0_0_1a21-python39;
+          pythoneda-shared-pythoneda-latest-python310 =
+            pythoneda-shared-pythoneda-0_0_1a21-python310;
+          pythoneda-shared-pythoneda-latest-python311 =
+            pythoneda-shared-pythoneda-0_0_1a21-python311;
+          pythoneda-shared-pythoneda-latest =
+            pythoneda-shared-pythoneda-latest-python310;
         };
         packages = rec {
-          default = pythoneda-latest;
-          pythoneda-0_0_1a21-python38 = pythoneda-0_0_1a21-for pkgs.python38;
-          pythoneda-0_0_1a21-python39 = pythoneda-0_0_1a21-for pkgs.python39;
-          pythoneda-0_0_1a21-python310 = pythoneda-0_0_1a21-for pkgs.python310;
-          pythoneda-0_0_1a21-python311 = pythoneda-0_0_1a21-for pkgs.python311;
-          pythoneda-latest = pythoneda-latest-python311;
-          pythoneda-latest-python38 = pythoneda-0_0_1a21-python38;
-          pythoneda-latest-python39 = pythoneda-0_0_1a21-python39;
-          pythoneda-latest-python310 = pythoneda-0_0_1a21-python310;
-          pythoneda-latest-python311 = pythoneda-0_0_1a21-python311;
+          default = pythoneda-shared-pythoneda-latest;
+          pythoneda-shared-pythoneda-0_0_1a21-python38 =
+            pythoneda-shared-pythoneda-0_0_1a21-for pkgs.python38;
+          pythoneda-shared-pythoneda-0_0_1a21-python39 =
+            pythoneda-shared-pythoneda-0_0_1a21-for pkgs.python39;
+          pythoneda-shared-pythoneda-0_0_1a21-python310 =
+            pythoneda-shared-pythoneda-0_0_1a21-for pkgs.python310;
+          pythoneda-shared-pythoneda-0_0_1a21-python311 =
+            pythoneda-shared-pythoneda-0_0_1a21-for pkgs.python311;
+          pythoneda-shared-pythoneda-latest =
+            pythoneda-shared-pythoneda-latest-python311;
+          pythoneda-shared-pythoneda-latest-python38 =
+            pythoneda-shared-pythoneda-0_0_1a21-python38;
+          pythoneda-shared-pythoneda-latest-python39 =
+            pythoneda-shared-pythoneda-0_0_1a21-python39;
+          pythoneda-shared-pythoneda-latest-python310 =
+            pythoneda-shared-pythoneda-0_0_1a21-python310;
+          pythoneda-shared-pythoneda-latest-python311 =
+            pythoneda-shared-pythoneda-0_0_1a21-python311;
         };
       });
 }

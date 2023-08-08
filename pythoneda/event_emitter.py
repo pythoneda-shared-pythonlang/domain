@@ -18,10 +18,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda.event import Event
-from pythoneda.port import Port
-
 import abc
+from pythoneda import Event, Port
 
 class EventEmitter(Port, abc.ABC):
     """

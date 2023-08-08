@@ -18,9 +18,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda.port import Port
+import abc
+from pythoneda import Port
 
-class PrimaryPort(Port):
+class PrimaryPort(Port, abc.ABC):
     """
     Input ports to the domain.
 
@@ -44,8 +45,9 @@ class PrimaryPort(Port):
         :return: The priority. The higher the value, the lower the priority.
         :rtype: int
         """
-        raise NotImplementedError("priority() must be implemented by subclasses")
+        return 100
 
+    @abc.abstractmethod
     async def accept(self, app):
         """
         Accepts input on behalf of the given application.

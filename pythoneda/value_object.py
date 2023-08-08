@@ -24,8 +24,7 @@ import functools
 import importlib
 import inspect
 import json
-from pythoneda.formatting import Formatting
-from pythoneda.sensitive_value import SensitiveValue
+from pythoneda import Formatting, SensitiveValue
 import re
 from typing import Any, Callable, Dict, List
 import uuid

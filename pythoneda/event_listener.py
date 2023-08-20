@@ -1,7 +1,7 @@
 """
 pythoneda/event_listener.py
 
-This script defines the EventListener class.
+This script defines the EventListener class and the @event_listener decorator.
 
 Copyright (C) 2023-today rydnr's PythonEDA
 
@@ -19,9 +19,125 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
+import functools
 import inspect
+import logging
 from pythoneda import Event, UnsupportedEvent
-from typing import List,Type
+from typing import Any, Callable, Dict, List, Type
+
+_event_listeners = {}
+_pending_event_listeners = {}
+
+def _build_cls_key(cls):
+    """
+    Builds a key for given class.
+    :param cls: The class.
+    :type cls: type
+    :return: A key.
+    :rtype: str
+    """
+
+    return f'{cls.__module__}.{cls.__name__}'
+
+def _classes_by_key(key):
+    """
+    Retrieves the classes annotated under given key.
+    :param key: The key.
+    :type key: str
+    :return: The list of classes.
+    :rtype: List
+    """
+    return [m[1] for m in inspect.getmembers(key, inspect.isclass)]
+
+def _add_to_pending(func:Callable, eventClass: Type[Any], store:Dict):
+    """
+    Adds given function (specifically a derived value) in a list.
+    :param value: The value to annotate.
+    :type value: Callable
+    :param eventClass: The class of the event.
+    :type eventClass: pythoneda.Event
+    :param store: The dictionary to store the function.
+    :type store: Dict
+    """
+    store[func.__code__] = eventClass
+
+def _add_wrapper(func:Callable, eventClass: Type[Any]):
+    """
+    Annotates given wrapper.
+    :param func: The wrapper.
+    :type func: callable
+    :param eventClass: The class of the event.
+    :type eventClass: pythoneda.Event
+    """
+    from pythoneda.event_listener import _pending_event_listeners
+    _add_to_pending(func, eventClass, _pending_event_listeners)
+
+def listen(eventClass: Type[Any]):
+    """
+    Decorator to annotate an event listener.
+    :param eventClass: The class of the event.
+    :type eventClass: pythoneda.Event
+    """
+    def decorator(func: Callable):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            return func(self, *args, **kwargs)
+        _add_wrapper(wrapper, eventClass)
+        return wrapper
+    return decorator
+
+def _process_pending_event_listeners(cls:type, delete:bool=False):
+    """
+    Processes all pending event listeners of given class.
+    :param cls: The class holding the event listeners.
+    :type cls: type
+    :param delete: Whether to clean up pending event listeners at the end or not.
+    :type delete: bool
+    """
+    from pythoneda.event_listener import _event_listeners, _pending_event_listeners
+    for name, listener in vars(cls).items():
+        if callable(listener):
+            _process_pending_event_listener(cls, listener, _pending_event_listeners, _event_listeners)
+    if delete:
+        del _pending_event_listeners
+
+def _process_pending_event_listener(cls:Type[Any], listener:Callable, pending:List, listeners:Dict):
+    """
+    Processes a pending event listener.
+    :param cls: The class holding the event listener.
+    :type cls: type
+    :param listener: The listener.
+    :type listener: Callable
+    :param pending: The pending listeners.
+    :type pending: List
+    :param listeners: The final listeners.
+    :type listeners: Dict
+    """
+    cls_key = _build_cls_key(cls)
+    if hasattr(listener, "__code__") and listener.__code__ in pending:
+        aux = listeners.get(cls_key, None)
+        if not aux:
+            aux = []
+        if not listener in aux:
+            aux.append(listener)
+        listeners[cls_key] = aux
+
+def _propagate_event_listeners(cls):
+    """
+    Propagates event listeners from given class' parents.
+    :param cls: The class holding the listeners.
+    :type cls: type
+    """
+    from pythoneda.event_listener import _event_listeners
+    cls_key = _build_cls_key(cls)
+    for current_parent in cls.mro():
+        parent_cls_key = _build_cls_key(current_parent)
+        if parent_cls_key in _event_listeners.keys():
+            if cls_key not in _event_listeners.keys():
+                _event_listeners[cls_key] = []
+            for event_listener in _event_listeners[parent_cls_key]:
+                if not event_listener in _event_listeners[cls_key]:
+                    _event_listeners[cls_key].append(event_listener)
 
 class EventListener(abc.ABC):
     """
@@ -40,18 +156,6 @@ class EventListener(abc.ABC):
     """
 
     _listeners = {}
-
-    @classmethod
-    @abc.abstractmethod
-    def supported_events(cls) -> List[Type[Event]]:
-        """
-        Retrieves the list of supported event classes.
-        :return: Such list.
-        :rtype: List
-        """
-        raise NotImplementedError(
-            "supported_events() must be implemented by subclasses"
-        )
 
     @classmethod
     def listeners(cls):
@@ -101,11 +205,9 @@ class EventListener(abc.ABC):
         """
         for subclass in cls.get_all_subclasses(EventListener):
             if abc.ABC not in subclass.__bases__:
-                for eventClass in subclass.supported_events():
-                    methodName = cls.build_method_name(eventClass)
-                    method = getattr(subclass, methodName)
-                    if inspect.ismethod(method) and inspect.isclass(method.__self__):
-                        EventListener.listen(subclass, eventClass)
+                listeners = _event_listeners.get(_build_cls_key(subclass), {})
+                for event_class in listeners:
+                    EventListener.listen(subclass, event_class)
 
     @classmethod
     def listen(cls, listener: Type, eventClass: Type[Event]):
@@ -118,6 +220,7 @@ class EventListener(abc.ABC):
         """
         eventListeners = EventListener.listeners_for(eventClass)
         if listener not in eventListeners:
+            logging.getLogger(cls.__module__).debug(f'{listener} is listening for {eventClass} events')
             eventListeners.append(listener)
 
     @classmethod
@@ -142,14 +245,15 @@ class EventListener(abc.ABC):
                 result.append(await method(event))
         return result
 
-
     @classmethod
-    def build_method_name(cls, eventClass: Type) -> str:
+    def __init_subclass__(cls, **kwargs):
         """
-        Builds a method name for given event class, by prepending the Event class name with "listen_".
-        :param eventClass: The event class.
-        :type eventClass: Type[Event]
-        :return: The method name.
-        :rtype: str
+        Initializes this class.
+        :param kwargs: Any additional keyword arguments.
+        :type kwargs: Dict
         """
-        return f'listen_{eventClass.__name__}'
+        super().__init_subclass__(**kwargs)
+        for current_parent in cls.mro():
+            _process_pending_event_listeners(current_parent, False)
+        _process_pending_event_listeners(cls, True)
+        _propagate_event_listeners(cls)

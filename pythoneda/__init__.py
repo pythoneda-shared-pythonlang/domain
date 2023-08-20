@@ -30,7 +30,26 @@ from .entity import Entity
 from .entity_in_progress import EntityInProgress
 from .event import Event
 from .event_emitter import EventEmitter
-from .event_listener import EventListener
+from .event_listener import listen, EventListener
 from .primary_port import PrimaryPort
 from .ports import Ports
 from .repo import Repo
+
+# default log level to be overridden by cli flags
+import logging
+if not logging.getLogger().hasHandlers():
+    import sys
+    initial_level = logging.DEBUG
+    default_logger = logging.getLogger()
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(initial_level)
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    console_handler.setFormatter(formatter)
+    default_logger.setLevel(initial_level)
+    default_logger.addHandler(console_handler)
+    for name in [ "asyncio" "git.cmd" ]:
+        specific_logger = logging.getLogger(name)
+        specific_logger.setLevel(logging.WARNING)

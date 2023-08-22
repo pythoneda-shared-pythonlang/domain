@@ -26,6 +26,7 @@ from pythoneda import Event, UnsupportedEvent
 from typing import Any, Callable, Dict, List, Type
 
 _event_listeners = {}
+_event_listener_methods = {}
 _pending_event_listeners = {}
 
 def _build_cls_key(cls):
@@ -36,7 +37,6 @@ def _build_cls_key(cls):
     :return: A key.
     :rtype: str
     """
-
     return f'{cls.__module__}.{cls.__name__}'
 
 def _classes_by_key(key):
@@ -80,38 +80,41 @@ def listen(eventClass: Type[Any]):
     """
     def decorator(func: Callable):
         @functools.wraps(func)
-        def wrapper(self, *args, **kwargs):
-            return func(self, *args, **kwargs)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
         _add_wrapper(wrapper, eventClass)
         return wrapper
     return decorator
 
-def _process_pending_event_listeners(cls:type, delete:bool=False):
+def _process_pending_event_listeners(cls:Type[Any], delete:bool=False):
     """
     Processes all pending event listeners of given class.
     :param cls: The class holding the event listeners.
-    :type cls: type
+    :type cls: Type[Any]
     :param delete: Whether to clean up pending event listeners at the end or not.
     :type delete: bool
     """
-    from pythoneda.event_listener import _event_listeners, _pending_event_listeners
+    from pythoneda.event_listener import _event_listeners, _event_listener_methods, _pending_event_listeners
     for name, listener in vars(cls).items():
-        if callable(listener):
-            _process_pending_event_listener(cls, listener, _pending_event_listeners, _event_listeners)
+        if isinstance(listener, classmethod):
+            # First, @classmethod. Then, @listen. That's why we are passing `listener.__func__, which is our @listen function`
+            _process_pending_event_listener(cls, listener.__func__, _pending_event_listeners, _event_listeners, _event_listener_methods)
     if delete:
         del _pending_event_listeners
 
-def _process_pending_event_listener(cls:Type[Any], listener:Callable, pending:List, listeners:Dict):
+def _process_pending_event_listener(cls:Type[Any], listener:Callable, pending:List, listeners:Dict, methods:Dict):
     """
     Processes a pending event listener.
     :param cls: The class holding the event listener.
-    :type cls: type
+    :type cls: Type[Any]
     :param listener: The listener.
     :type listener: Callable
     :param pending: The pending listeners.
     :type pending: List
     :param listeners: The final listeners.
     :type listeners: Dict
+    :param methods: The listener methods.
+    :type methods: Dict
     """
     cls_key = _build_cls_key(cls)
     if hasattr(listener, "__code__") and listener.__code__ in pending:
@@ -119,8 +122,9 @@ def _process_pending_event_listener(cls:Type[Any], listener:Callable, pending:Li
         if not aux:
             aux = []
         if not listener in aux:
-            aux.append(listener)
+            aux.append(pending.get(listener.__code__))
         listeners[cls_key] = aux
+        methods[cls_key] = listener
 
 def _propagate_event_listeners(cls):
     """
@@ -224,6 +228,18 @@ class EventListener(abc.ABC):
             eventListeners.append(listener)
 
     @classmethod
+    def listen_method_for(cls, eventClass:Type[Any]) -> Callable:
+        """
+        Retrieves the @listen() method for given event, in this class.
+        :param eventClass: The event class.
+        :type eventClass: Type[Any]
+        :return: The @listen-decorated method.
+        :rtype: Callable
+        """
+        cls_key = _build_cls_key(cls)
+        return _event_listener_methods.get(cls_key, None)
+
+    @classmethod
     async def accept(cls, event: Event):
         """
         Notification of a supported event.
@@ -237,12 +253,11 @@ class EventListener(abc.ABC):
         if len(listeners) == 0:
             raise UnsupportedEvent(event)
         for listener in listeners:
-            methodName = cls.build_method_name(event.__class__)
-            method = getattr(listener, methodName)
+            method = listener.listen_method_for(event.__class__)
             if method is None:
-                logging.getLogger(cls.__name__).error(f'{listener.__class__} does not define {methodName}(event: Event)')
+                logging.getLogger(cls.__name__).error(f'Cannot find @listen({event.__class__}) method on {listener.__class__}')
             else:
-                result.append(await method(event))
+                result.append(await method(cls, event))
         return result
 
     @classmethod

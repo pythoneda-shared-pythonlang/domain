@@ -24,7 +24,7 @@ import functools
 import importlib
 import inspect
 import json
-from pythoneda import Formatting, SensitiveValue
+from pythoneda import BaseObject, Formatting, SensitiveValue
 import re
 from typing import Any, Callable, Dict, List
 import uuid
@@ -234,7 +234,7 @@ def _propagate_properties(cls):
                 if not prop in _internal_properties[cls_key]:
                     _internal_properties[cls_key].append(prop)
 
-class ValueObject:
+class ValueObject(BaseObject):
     """
     A value object.
 

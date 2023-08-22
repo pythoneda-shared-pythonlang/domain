@@ -18,10 +18,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import abc
 from pythoneda import Port
 from typing import Dict, List
 
-class Repo(Port):
+class Repo(Port, abc.ABC):
     """
     A repository for a specific entity class.
 
@@ -50,41 +51,42 @@ class Repo(Port):
         """
         return self._entity_class
 
+    @abc.abstractmethod
     def find_by_id(self, id: str):
         """Must be implemented by subclasses"""
         raise NotImplementedError("find_by_id() must be implemented by subclasses")
 
-
+    @abc.abstractmethod
     def find_by_attribute(self, attributeName: str, attributeValue: str):
         """Must be implemented by subclasses"""
         raise NotImplementedError("find_by_attribute() must be implemented by subclasses")
 
-
+    @abc.abstractmethod
     def filter(self, dictionary: Dict):
         """Must be implemented by subclasses"""
         raise NotImplementedError("filter() must be implemented by subclasses")
 
-
+    @abc.abstractmethod
     def insert(self, item):
         """Must be implemented by subclasses"""
         raise NotImplementedError("insert() must be implemented by subclasses")
 
-
+    @abc.abstractmethod
     def update(self, item):
         """Must be implemented by subclasses"""
         raise NotImplementedError("update() must be implemented by subclasses")
 
-
+    @abc.abstractmethod
     def delete(self, id: str):
         """Must be implemented by subclasses"""
         raise NotImplementedError("delete() must be implemented by subclasses")
 
-
+    @abc.abstractmethod
     def find_by_pk(self, pk: Dict):
         """Must be implemented by subclasses"""
         raise NotImplementedError("find_by_pk() must be implemented by subclasses")
 
-
+    @abc.abstractmethod
     def list(self) -> List:
         """Must be implemented by subclasses"""
         raise NotImplementedError("list() must be implemented by subclasses")

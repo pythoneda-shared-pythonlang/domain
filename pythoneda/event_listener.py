@@ -22,7 +22,7 @@ import abc
 import functools
 import inspect
 import logging
-from pythoneda import Event, UnsupportedEvent
+from pythoneda import BaseObject, Event, UnsupportedEvent
 from typing import Any, Callable, Dict, List, Type
 
 _event_listeners = {}
@@ -143,7 +143,7 @@ def _propagate_event_listeners(cls):
                 if not event_listener in _event_listeners[cls_key]:
                     _event_listeners[cls_key].append(event_listener)
 
-class EventListener(abc.ABC):
+class EventListener(BaseObject, abc.ABC):
     """
     This class can listen / receive events.
 
@@ -224,7 +224,7 @@ class EventListener(abc.ABC):
         """
         eventListeners = EventListener.listeners_for(eventClass)
         if listener not in eventListeners:
-            logging.getLogger(cls.__module__).debug(f'{listener} is listening for {eventClass} events')
+            EventListener.logger().debug(f'{listener} is listening for {eventClass} events')
             eventListeners.append(listener)
 
     @classmethod
@@ -255,7 +255,7 @@ class EventListener(abc.ABC):
         for listener in listeners:
             method = listener.listen_method_for(event.__class__)
             if method is None:
-                logging.getLogger(cls.__name__).error(f'Cannot find @listen({event.__class__}) method on {listener.__class__}')
+                EventListener.logger().error(f'Cannot find @listen({event.__class__}) method on {listener.__class__}')
             else:
                 result.append(await method(cls, event))
         return result

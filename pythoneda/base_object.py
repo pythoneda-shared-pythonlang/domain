@@ -1,7 +1,7 @@
 """
-pythoneda/port.py
+pythoneda/base_object.py
 
-This script defines the Port class.
+This script defines the BaseObject class.
 
 Copyright (C) 2023-today rydnr's PythonEDA
 
@@ -18,25 +18,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda import BaseObject
+# I know I shouldn't be doing this. It's a framework inside the domain.
+import logging
 
-class Port(BaseObject):
+class BaseObject:
     """
-    Represents a primary or secondary port.
+    Ancestor of all PythonEDA classes.
 
-    Class name: Port
+    Class name: BaseObject
 
     Responsibilities:
-        - They are interfaces that get implemented by adapters in the infrastructure layer.
-        - Port implementations interact with the outside.
+        - Define common behavior for all PythonEDA classes.
 
     Collaborators:
-        - Adapter implementations in the infrastructure layer.
-        - Application that resolve Ports with adapters when running the bounded context.
-        - Ports maintain a registry of Port instances.
+        - None
     """
-    def __init__(self):
+    @classmethod
+    def logger(cls):
         """
-        Creates a new instance.
+        Retrieves the logger instance.
+        :return: Such instance.
+        :rtype: logging.Logger
         """
-        super().__init__()
+        return logging.getLogger(cls.__name__)

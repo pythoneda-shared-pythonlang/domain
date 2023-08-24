@@ -20,8 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
-from .base_object import BaseObject
 from .port import Port
+from .ports import Ports
+from .base_object import BaseObject
 from .formatting import Formatting
 from .sensitive_value import SensitiveValue
 from .value_object import attribute, filter_attribute, internal_attribute, primary_key_attribute, sensitive, ValueObject
@@ -33,5 +34,4 @@ from .event import Event
 from .event_emitter import EventEmitter
 from .event_listener import listen, EventListener
 from .primary_port import PrimaryPort
-from .ports import Ports
 from .repo import Repo

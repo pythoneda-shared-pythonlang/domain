@@ -19,10 +19,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import importlib
-from pythoneda import BaseObject, Port
+from pythoneda import Port
 from typing import Dict
 
-class Ports(BaseObject):
+class Ports():
     """
     Registry of available ports.
 

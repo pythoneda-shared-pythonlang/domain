@@ -18,10 +18,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-# I know I shouldn't be doing this. It's a framework inside the domain.
-import logging
+from .logging_port import LoggingPort
+from .ports import Ports
 
-class BaseObject:
+class BaseObject():
     """
     Ancestor of all PythonEDA classes.
 
@@ -33,6 +33,8 @@ class BaseObject:
     Collaborators:
         - None
     """
+    _logger = None
+
     @classmethod
     def logger(cls):
         """
@@ -40,4 +42,6 @@ class BaseObject:
         :return: Such instance.
         :rtype: logging.Logger
         """
-        return logging.getLogger(cls.__name__)
+        if _logger is None:
+            _logger = Ports.instance().resolve(LoggingPort)
+        return _logger

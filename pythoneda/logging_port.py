@@ -1,9 +1,9 @@
 """
-pythoneda/port.py
+pythoneda/logging_port.py
 
-This script defines the Port class.
+This script defines the LoggingPort class.
 
-Copyright (C) 2023-today rydnr's PythonEDA
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/domain
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,25 +18,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from abc import ABC
+from .port import Port
+from abc import abstractmethod
 
-class Port(ABC):
+class LoggingPort(Port):
     """
-    Represents a primary or secondary port.
+    Port for logging mechanisms.
 
-    Class name: Port
+    Class name: LoggingPort
 
     Responsibilities:
-        - They are interfaces that get implemented by adapters in the infrastructure layer.
-        - Port implementations interact with the outside.
+        - Provide logging mechanisms.
 
     Collaborators:
-        - Adapter implementations in the infrastructure layer.
-        - Application that resolve Ports with adapters when running the bounded context.
-        - Ports maintain a registry of Port instances.
+        - None
     """
-    def __init__(self):
+    @abstractmethod
+    def logger(self, category:str):
         """
-        Creates a new instance.
+        Retrieves the logger instance.
+        :param category: The logging category.
+        :type category: str
+        :return: Such instance.
+        :rtype: logging.Logger
         """
-        super().__init__()
+        return NotImplementedError("logger(str) should be implemented by subclasses")

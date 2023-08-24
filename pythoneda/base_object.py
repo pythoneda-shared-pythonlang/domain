@@ -42,6 +42,6 @@ class BaseObject():
         :return: Such instance.
         :rtype: logging.Logger
         """
-        if _logger is None:
-            _logger = Ports.instance().resolve(LoggingPort)
-        return _logger
+        if cls._logger is None:
+            cls._logger = Ports.instance().resolve(LoggingPort)
+        return cls._logger

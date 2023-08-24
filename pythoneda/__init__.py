@@ -22,6 +22,7 @@ __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
 from .port import Port
 from .ports import Ports
+from .logging_port import LoggingPort
 from .base_object import BaseObject
 from .formatting import Formatting
 from .sensitive_value import SensitiveValue

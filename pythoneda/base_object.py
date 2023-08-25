@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from .logging_port import LoggingPort
 from .logging_port_fallback import LoggingPortFallback
 from .ports import Ports
+from typing import Type
 
 class BaseObject():
     """
@@ -37,6 +38,17 @@ class BaseObject():
     _logging_port = None
 
     @classmethod
+    def fqdn_key(cls, target:Type) -> str:
+        """
+        Retrieves the key used for given class.
+        :param target: The class.
+        :type target: Class
+        :return: The key.
+        :rtype: str
+        """
+        return f'{target.__module__}.{target.__name__}'
+
+    @classmethod
     def logger(cls, category:str=None):
         """
         Retrieves the logger instance.
@@ -50,8 +62,8 @@ class BaseObject():
         if cls._logging_port is None:
             cls._logging_port = LoggingPort.LoggingFallback()
 
-        if category is not None:
-            cat = cls.__module__
+        if category is None:
+            cat = cls.fqdn_key(cls)
         else:
             cat = category
 

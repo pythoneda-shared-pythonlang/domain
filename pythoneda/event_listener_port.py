@@ -19,10 +19,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
-from pythoneda import BaseObject, Event, EventListener, Port
+from pythoneda import BaseObject, Event, EventListener, PrimaryPort
 from typing import Type
 
-class EventListenerPort(BaseObject, Port, abc.ABC):
+class EventListenerPort(BaseObject, PrimaryPort, abc.ABC):
     """
     Port able to receive Events.
 
@@ -44,6 +44,7 @@ class EventListenerPort(BaseObject, Port, abc.ABC):
         :param eventClass: The type of Event.
         :type eventClass: Type[Event]
         """
+        cls.logger(EventListenerPort.__module__).info(f'{listener} listening to {eventClass} events')
         return EventListener.listen(listener, eventClass)
 
     @classmethod
@@ -55,4 +56,5 @@ class EventListenerPort(BaseObject, Port, abc.ABC):
         :return: Potentially, a list of triggered events in response.
         :rtype: List
         """
+        cls.logger(EventListenerPort.__module__).info(f'Accepting event {event}')
         return await EventListener.accept(event)

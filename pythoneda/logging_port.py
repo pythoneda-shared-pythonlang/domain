@@ -33,6 +33,12 @@ class LoggingPort(Port):
     Collaborators:
         - None
     """
+    def __init__(self):
+        """
+        Initializes a new LoggingPort instance.
+        """
+        super().__init__()
+
     @abstractmethod
     def logger(self, category:str):
         """

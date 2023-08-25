@@ -23,6 +23,7 @@ __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 from .port import Port
 from .ports import Ports
 from .logging_port import LoggingPort
+from .logging_port_fallback import LoggingPortFallback
 from .base_object import BaseObject
 from .formatting import Formatting
 from .sensitive_value import SensitiveValue
@@ -35,4 +36,5 @@ from .event import Event
 from .event_emitter import EventEmitter
 from .event_listener import listen, EventListener
 from .primary_port import PrimaryPort
+from .event_listener_port import EventListenerPort
 from .repo import Repo

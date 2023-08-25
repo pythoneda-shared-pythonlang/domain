@@ -3,7 +3,7 @@ pythoneda/base_object.py
 
 This script defines the BaseObject class.
 
-Copyright (C) 2023-today rydnr's PythonEDA
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/domain
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .logging_port import LoggingPort
+from .logging_port_fallback import LoggingPortFallback
 from .ports import Ports
 
 class BaseObject():
@@ -33,15 +34,25 @@ class BaseObject():
     Collaborators:
         - None
     """
-    _logger = None
+    _logging_port = None
 
     @classmethod
-    def logger(cls):
+    def logger(cls, category:str=None):
         """
         Retrieves the logger instance.
+        :param category: The logging category.
+        :type category: str
         :return: Such instance.
-        :rtype: logging.Logger
+        :rtype: Any
         """
-        if cls._logger is None:
-            cls._logger = Ports.instance().resolve(LoggingPort)
-        return cls._logger
+        if cls._logging_port is None:
+            cls._logging_port = Ports.instance().resolve(LoggingPort)
+        if cls._logging_port is None:
+            cls._logging_port = LoggingPort.LoggingFallback()
+
+        if category is not None:
+            cat = cls.__module__
+        else:
+            cat = category
+
+        return cls._logging_port.logger(cat)

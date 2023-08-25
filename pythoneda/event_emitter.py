@@ -3,7 +3,7 @@ pythoneda/event_emitter.py
 
 This script defines the EventEmitter class.
 
-Copyright (C) 2023-today rydnr's PythonEDA
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/domain
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
-from pythoneda import Event, Port
+from pythoneda import BaseObject, Event, Port
 
-class EventEmitter(Port, abc.ABC):
+class EventEmitter(BaseObject, Port, abc.ABC):
     """
     Port able to emit Events.
 

@@ -3,7 +3,7 @@ pythoneda/sensitive_value.py
 
 This file defines the SensitiveValue class.
 
-Copyright (C) 2023-today rydnr's PythonEDA
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/domain
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

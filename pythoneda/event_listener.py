@@ -1,9 +1,9 @@
 """
 pythoneda/event_listener.py
 
-This script defines the EventListener class and the @event_listener decorator.
+This script defines the EventListener class and the @listen decorator.
 
-Copyright (C) 2023-today rydnr's PythonEDA
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/domain
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

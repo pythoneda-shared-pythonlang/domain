@@ -38,9 +38,9 @@ class BaseObject():
     _logging_port = None
 
     @classmethod
-    def fqdn_key(cls, target:Type) -> str:
+    def full_class_name(cls, target:Type) -> str:
         """
-        Retrieves the key used for given class.
+        Retrieves the full class name of given class.
         :param target: The class.
         :type target: Class
         :return: The key.
@@ -63,7 +63,7 @@ class BaseObject():
             cls._logging_port = LoggingPort.LoggingFallback()
 
         if category is None:
-            cat = cls.fqdn_key(cls)
+            cat = cls.full_class_name(cls)
         else:
             cat = category
 

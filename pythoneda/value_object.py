@@ -373,7 +373,8 @@ class ValueObject(BaseObject):
         :rtype: str
         """
         result = None
-        result = f'"{prop.fget.__name__}": {self._value_to_json(prop.fget(self), includeNulls)}'
+        if hasattr(prop, "fget"):
+            result = f'"{prop.fget.__name__}": {self._value_to_json(prop.fget(self), includeNulls)}'
         return result
 
     def _value_to_json(self, value:Any, includeNulls:bool=True) -> str:

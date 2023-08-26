@@ -38,15 +38,18 @@ class BaseObject():
     _logging_port = None
 
     @classmethod
-    def full_class_name(cls, target:Type) -> str:
+    def full_class_name(cls, target:Type=None) -> str:
         """
         Retrieves the full class name of given class.
-        :param target: The class.
+        :param target: The class. If omitted, this very class.
         :type target: Class
         :return: The key.
         :rtype: str
         """
-        return f'{target.__module__}.{target.__name__}'
+        actual_target = target
+        if actual_target is None:
+            actual_target = cls
+        return f'{actual_target.__module__}.{actual_target.__name__}'
 
     @classmethod
     def logger(cls, category:str=None):

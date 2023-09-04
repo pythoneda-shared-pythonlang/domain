@@ -248,6 +248,15 @@ class ValueObject(BaseObject):
         - None
     """
     @classmethod
+    def empty(cls):
+        """
+        Builds an empty instance. Required for unmarshalling.
+        :return: An empty instance.
+        :rtype: pythoneda.ValueObject
+        """
+        return cls()
+
+    @classmethod
     def primary_key(cls) -> List:
         """
         Retrieves the list of attributes of the primary key (marked with @primary_key_attribute).
@@ -377,6 +386,37 @@ class ValueObject(BaseObject):
             result = f'"{prop.fget.__name__}": {self._value_to_json(prop.fget(self), includeNulls)}'
         return result
 
+    def _property_to_tuple(self, prop:property, includeNulls:bool=True) -> tuple:
+        """
+        Builds a tuble of name, value of given property.
+        :param prop: The property.
+        :type prop: Any
+        :param includeNulls: Whether to include nulls or not.
+        :type includeNulls: bool
+        :return: A tuple representation of given property.
+        :rtype: tuple[str, str]
+        """
+        name = None
+        value = None
+        if hasattr(prop, "fget"):
+            name = prop.fget.__name__
+            value = self._value_to_json(prop.fget(self), includeNulls)
+        return (name, value)
+
+    @classmethod
+    def _property_name(cls, prop:property) -> str:
+        """
+        Retrieves the name of the property.
+        :param prop: The property.
+        :type prop: Any
+        :return: The property name.
+        :rtype: str
+        """
+        result = None
+        if hasattr(prop, "fget"):
+            result = prop.fget.__name__
+        return result
+
     def _value_to_json(self, value:Any, includeNulls:bool=True) -> str:
         """
         Builds a json-compatible representation of given value.
@@ -393,11 +433,7 @@ class ValueObject(BaseObject):
         if value:
             if type(value) is list or type(value) is dict:
                 items = list(map(self._value_to_json, value))
-                if len(items) > 0:
-                    if type(value) is list:
-                        result = '[ ' + ', '.join(items) + ' ]'
-                    if type(value) is dict:
-                        result = '{ ' + ', '.join(items) + ' }'
+                result = json.dumps(items)
             elif self._is_json_compatible(value):
                 result = value.to_json()
             else:
@@ -433,13 +469,110 @@ class ValueObject(BaseObject):
 
         return result
 
-    def to_json(self) -> Dict:
+    def _get_attribute_to_json(self, varName) -> str:
+        """
+        Retrieves the value of an attribute of this instance, as Json.
+        :param varName: The name of the attribute.
+        :type varName: str
+        :return: The attribute value in json format.
+        :rtype: str
+        """
+        return self.__getattribute__(varName)
+
+    def to_dict(self) -> Dict:
+        """
+        Provides a dictionary representation of this instance.
+        :return: The dictionary representing this instance.
+        :rtype: str
+        """
+        result = {}
+        internal_properties = {}
+        key = _build_cls_key(self.__class__)
+        print(f'key -> {key}')
+        print(f'internal properties -> {_internal_properties[key]}')
+        if key in _internal_properties.keys():
+            for prop in _internal_properties[key]:
+                name, value = self._property_to_tuple(prop)
+                internal_properties[name] = value
+        internal = {}
+        internal["properties"] = internal_properties
+        internal["class"] = f"{self.__class__.__module__}.{self.__class__.__name__}"
+        result["_internal"] = internal
+        if key in _properties.keys():
+            for prop in _properties[key]:
+                name, _ = self._property_to_tuple(prop)
+                result[name] = self._get_attribute_to_json(name)
+                print(f'setting {name} to json {result[name]}')
+        return result
+
+    def to_json(self) -> str:
         """
         Provides a JSON representation of this instance.
         :return: The JSON representing this instance.
         :rtype: str
         """
-        return json.loads(self.__str__())
+        aux = self.to_dict()
+        print()
+        print(aux)
+        print()
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_json(cls, text:str):
+        """
+        Builds an instance based on given text.
+        :param text: The serialized instance.
+        :type text: str
+        :return: A reconstructed instance.
+        :rtype: pythoneda.ValueObject
+        """
+        return cls.from_dict(json.loads(text))
+
+    @classmethod
+    def from_dict(cls, contents:Dict):
+        """
+        Builds an instance based on given dictionary.
+        :param contents: The instance properties.
+        :type contents: Dict
+        :return: A reconstructed instance.
+        :rtype: pythoneda.ValueObject
+        """
+        module_name, class_name = contents["_internal"]["class"].rsplit('.', 1)
+        module = importlib.import_module(module_name)
+        actual_class = getattr(module, class_name)
+        return actual_class.new_from_json(contents)
+
+    @classmethod
+    def new_from_json(cls, dictFromJson:Dict):
+        """
+        Builds an instance based on given dictionary.
+        :param dictFromJson: The dictionary.
+        :type dictFromJson: Dict
+        :return: A reconstructed instance.
+        :rtype: pythoneda.ValueObject
+        """
+        result = cls.empty()
+        key = _build_cls_key(cls)
+        for name, value in dictFromJson.items():
+            for prop in _properties[key]:
+                propName = cls._property_name(prop)
+                if name == propName:
+                    result._set_attribute_from_json(name, value)
+
+        return result
+
+    def _set_attribute_from_json(self, varName, varValue):
+        """
+        Changes the value of an attribute of this instance.
+        :param varName: The name of the attribute.
+        :type varName: str
+        :param varValue: The value of the attribute.
+        :type varValue: int, bool, str, type
+        """
+        try:
+            self.__setattr__(varName, varValue)
+        except AttributeError:
+            self.__setattr__(f'_{varName}', varValue)
 
     def __str__(self) -> str:
         """
@@ -495,7 +628,8 @@ class ValueObject(BaseObject):
         if key in _properties.keys():
             if varName in [x for x in _properties[key]]:
                 self._updated = datetime.now()
-        super(ValueObject, self).__setattr__(varName, varValue)
+        print(f'{self.__class__.__name__}::{varName} = {varValue}')
+        super().__setattr__(varName, varValue)
 
     def __eq__(self, other) -> bool:
         """

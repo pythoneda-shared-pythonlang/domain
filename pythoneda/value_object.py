@@ -488,8 +488,6 @@ class ValueObject(BaseObject):
         result = {}
         internal_properties = {}
         key = _build_cls_key(self.__class__)
-        print(f'key -> {key}')
-        print(f'internal properties -> {_internal_properties[key]}')
         if key in _internal_properties.keys():
             for prop in _internal_properties[key]:
                 name, value = self._property_to_tuple(prop)
@@ -502,7 +500,6 @@ class ValueObject(BaseObject):
             for prop in _properties[key]:
                 name, _ = self._property_to_tuple(prop)
                 result[name] = self._get_attribute_to_json(name)
-                print(f'setting {name} to json {result[name]}')
         return result
 
     def to_json(self) -> str:
@@ -511,10 +508,6 @@ class ValueObject(BaseObject):
         :return: The JSON representing this instance.
         :rtype: str
         """
-        aux = self.to_dict()
-        print()
-        print(aux)
-        print()
         return json.dumps(self.to_dict())
 
     @classmethod
@@ -628,7 +621,6 @@ class ValueObject(BaseObject):
         if key in _properties.keys():
             if varName in [x for x in _properties[key]]:
                 self._updated = datetime.now()
-        print(f'{self.__class__.__name__}::{varName} = {varValue}')
         super().__setattr__(varName, varValue)
 
     def __eq__(self, other) -> bool:

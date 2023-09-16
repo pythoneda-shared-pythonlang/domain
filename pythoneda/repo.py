@@ -53,40 +53,82 @@ class Repo(Port, abc.ABC):
 
     @abc.abstractmethod
     def find_by_id(self, id: str):
-        """Must be implemented by subclasses"""
+        """
+        Retrieves an entity by its id.
+        :param id: The id.
+        :type id: str
+        :return: An instance of the EntityClass type, or None if none found.
+        :rtype: pythoneda.Entity
+        """
         raise NotImplementedError("find_by_id() must be implemented by subclasses")
 
     @abc.abstractmethod
     def find_by_attribute(self, attributeName: str, attributeValue: str):
-        """Must be implemented by subclasses"""
+        """
+        Retrieves the entities matching given attribute criteria.
+        :param attributeName: The name of the attribute.
+        :type attributeName: str
+        :param attributeValue: The name of the attribute.
+        :type attributeValue: str
+        :return: The instances of the EntityClass matching given criteria, or an empty list if none found.
+        :rtype: List[pythoneda.Entity]
+        """
         raise NotImplementedError("find_by_attribute() must be implemented by subclasses")
 
     @abc.abstractmethod
     def filter(self, dictionary: Dict):
-        """Must be implemented by subclasses"""
+        """
+        Retrieves the entities matching given criteria.
+        :param dictionary: The filter.
+        :type dictionary: Dict
+        :return: The instances of the EntityClass matching given criteria, or an empty list if none found.
+        :rtype: List[pythoneda.Entity]
+        """
         raise NotImplementedError("filter() must be implemented by subclasses")
 
     @abc.abstractmethod
     def insert(self, item):
-        """Must be implemented by subclasses"""
+        """
+        Persists a new Entity.
+        :param item: The entity.
+        :type item: pythoneda.Entity
+        """
         raise NotImplementedError("insert() must be implemented by subclasses")
 
     @abc.abstractmethod
     def update(self, item):
-        """Must be implemented by subclasses"""
+        """
+        Updates an existing Entity.
+        :param item: The entity.
+        :type item: pythoneda.Entity
+        """
         raise NotImplementedError("update() must be implemented by subclasses")
 
     @abc.abstractmethod
     def delete(self, id: str):
-        """Must be implemented by subclasses"""
+        """
+        Deletes an existing Entity.
+        :param item: The entity.
+        :type item: pythoneda.Entity
+        """
         raise NotImplementedError("delete() must be implemented by subclasses")
 
     @abc.abstractmethod
     def find_by_pk(self, pk: Dict):
-        """Must be implemented by subclasses"""
+        """
+        Retrieves an entity matching a primary key filter.
+        :param pk: The primary key values.
+        :type pk: str
+        :return: An instance of the EntityClass type, or None if none found.
+        :rtype: pythoneda.Entity
+        """
         raise NotImplementedError("find_by_pk() must be implemented by subclasses")
 
     @abc.abstractmethod
     def list(self) -> List:
-        """Must be implemented by subclasses"""
+        """
+        Retrieves all entities.
+        :return: The list of all entities.
+        :rtype: List[Entity]
+        """
         raise NotImplementedError("list() must be implemented by subclasses")

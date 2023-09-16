@@ -67,8 +67,6 @@ class DomainException(Exception, ValueObject):
         :rtype: str
         """
         localedir = os.path.join(Path(__file__).resolve().parent.parent, self.__class__.locale_dir, "locale")
-
-        print(f'using locale folder {localedir}')
         t = gettext.translation("pythoneda", localedir=self.__class__.locale_dir, languages=[locale], fallback=True)
         _ = t.gettext
 

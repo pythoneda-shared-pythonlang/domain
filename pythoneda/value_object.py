@@ -234,6 +234,19 @@ def _propagate_properties(cls):
                 if not prop in _internal_properties[cls_key]:
                     _internal_properties[cls_key].append(prop)
 
+def default_json_serializer(obj) -> Dict:
+    """
+    Uses obj.to_dict() in the JSON serialization process.
+    :param obj: The object to serialize to JSON.
+    :type obj: Any
+    :return: A dictionary.
+    :rtype: Dict
+    """
+    if hasattr(obj, 'to_dict') and callable(obj.to_dict):
+        return obj.to_dict()
+    else:
+        raise TypeError(f"{obj.__class__.__name__} does not define to_dict() to serialize to JSON")
+
 class ValueObject(BaseObject):
     """
     A value object.
@@ -508,7 +521,7 @@ class ValueObject(BaseObject):
         :return: The JSON representing this instance.
         :rtype: str
         """
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_dict(), default=default_json_serializer)
 
     @classmethod
     def from_json(cls, text:str):
@@ -519,7 +532,16 @@ class ValueObject(BaseObject):
         :return: A reconstructed instance.
         :rtype: pythoneda.ValueObject
         """
-        return cls.from_dict(json.loads(text))
+        result = None
+        try:
+            result = cls.from_dict(json.loads(text))
+        except json.JSONDecodeError as e:
+            ValueObject.logger("pythoneda.ValueObject").error(f'decoding error: {e}')
+        except Exception as e:
+            ValueObject.logger("pythoneda.ValueObject").error(f'Unexpected error: {e}')
+            import traceback
+            traceback.print_exc()
+        return result
 
     @classmethod
     def from_dict(cls, contents:Dict):

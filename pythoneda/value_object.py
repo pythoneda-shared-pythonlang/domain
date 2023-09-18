@@ -536,9 +536,9 @@ class ValueObject(BaseObject):
         try:
             result = cls.from_dict(json.loads(text))
         except json.JSONDecodeError as e:
-            ValueObject.logger("pythoneda.ValueObject").error(f'decoding error: {e}')
+            ValueObject.logger().error(f'decoding error: {e}')
         except Exception as e:
-            ValueObject.logger("pythoneda.ValueObject").error(f'Unexpected error: {e}')
+            ValueObject.logger().error(f'Unexpected error: {e}')
             import traceback
             traceback.print_exc()
         return result

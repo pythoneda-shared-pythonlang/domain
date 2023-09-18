@@ -44,7 +44,7 @@ class EventListenerPort(BaseObject, PrimaryPort, abc.ABC):
         :param eventClass: The type of Event.
         :type eventClass: Type[Event]
         """
-        cls.logger(EventListenerPort.__module__).info(f'{listener} listening to {eventClass} events')
+        EventListenerPort.logger(EventListenerPort.__module__).info(f'{listener} listening to {eventClass} events')
         return EventListener.listen(listener, eventClass)
 
     @classmethod
@@ -56,5 +56,5 @@ class EventListenerPort(BaseObject, PrimaryPort, abc.ABC):
         :return: Potentially, a list of triggered events in response.
         :rtype: List
         """
-        cls.logger(EventListenerPort.__module__).info(f'Accepting event {event}')
+        EventListenerPort.logger(EventListenerPort.__module__).info(f'Accepting event {event}')
         return await EventListener.accept(event)

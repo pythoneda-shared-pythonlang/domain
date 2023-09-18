@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from .logging_port import LoggingPort
 from .logging_port_fallback import LoggingPortFallback
 from .ports import Ports
+import re
 from typing import Type
 
 class BaseObject():
@@ -36,6 +37,45 @@ class BaseObject():
         - None
     """
     _logging_port = None
+
+    @classmethod
+    def snake_to_camel(cls, input:str) -> str:
+        """
+        Converts snake case to camel case.
+        :param input: The snake-case input to convert.
+        :type input: str
+        :return: The camel-case version of the input.
+        :rtype: str
+        """
+        components = input.split('_')
+        return ''.join(x.title() for x in components)
+
+    @classmethod
+    def simplify_class_name(cls, input:str) -> str:
+        """
+        Simplifies given class name to remove the module if it's just a snake-case version of the actual class name.
+        :param input: The class name to simplify.
+        :type input: str
+        :return: The simplified class name, or the input if it doesn't need to be simplified.
+        :rtype: str
+        """
+        if '.' not in input:
+            return input  # If there's no dot, it's not a fully qualified class name
+
+        module_name, class_name = input.rsplit('.', 1)
+
+        # Extract the last part of the module path (if it exists)
+        last_module_name = module_name.split('.')[-1] if '.' in module_name else module_name
+
+        # Convert the last part of the module path to CamelCase
+        camel_case_last_module = cls.snake_to_camel(last_module_name)
+
+        # Check if the class name is the CamelCase version of the last part of the module name
+        if class_name == camel_case_last_module:
+            # Remove the last part of the module name and append the class name
+            return '.'.join(module_name.split('.')[:-1] + [class_name])
+
+        return input
 
     @classmethod
     def full_class_name(cls, target:Type=None) -> str:
@@ -61,12 +101,14 @@ class BaseObject():
         :rtype: Any
         """
         if cls._logging_port is None:
-            cls._logging_port = Ports.instance().resolve(LoggingPort)
+            ports = Ports.instance()
+            if ports is not None:
+                cls._logging_port = ports.resolve(LoggingPort)
         if cls._logging_port is None:
-            cls._logging_port = LoggingPort.LoggingFallback()
+            cls._logging_port = LoggingPortFallback()
 
         if category is None:
-            cat = cls.full_class_name(cls)
+            cat = cls.simplify_class_name(cls.full_class_name(cls))
         else:
             cat = category
 

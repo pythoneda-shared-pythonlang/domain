@@ -63,7 +63,12 @@ class Ports():
         :return: Such instance.
         :rtype: Ports
         """
-        return cls._singleton
+        result = cls._singleton
+        if result is None:
+            import logging
+            logging.getLogger("pythoneda.Ports").warning("Ports not initialized. Adapters won't be available")
+            result = cls({})
+        return result
 
     def resolve(self, port: Port) -> Port:
         """

@@ -40,7 +40,7 @@ class LoggingFallback:
         :type category: str
         """
         super().__init__()
-        _category = category
+        self._category = category
 
     @property
     def category(self) -> str:
@@ -126,7 +126,6 @@ class LoggingPortFallback():
         Initializes a new LoggingPortFallback instance.
         """
         super().__init__()
-
 
     def logger(self, category: str):
         """

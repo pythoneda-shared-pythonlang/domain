@@ -49,3 +49,14 @@ class LoggingPort(Port):
         :rtype: logging.Logger
         """
         return NotImplementedError("logger(str) should be implemented by subclasses")
+
+    @property
+    @classmethod
+    def is_one_shot_compatible(cls) -> bool:
+        """
+        Retrieves whether this primary port should be instantiated when "one-shot" behavior is active.
+        It should return False unless the port listens to future messages from outside.
+        :return: True in such case.
+        :rtype: bool
+        """
+        return False

@@ -56,8 +56,8 @@ class PrimaryPort(Port, abc.ABC):
         """
         raise NotImplementedError("accept() must be implemented by subclasses")
 
-    @property
     @classmethod
+    @property
     def is_one_shot_compatible(cls) -> bool:
         """
         Retrieves whether this primary port should be instantiated when

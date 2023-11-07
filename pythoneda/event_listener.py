@@ -18,6 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from .ports import Ports
 import abc
 import functools
 import inspect
@@ -30,6 +31,7 @@ _event_listeners_by_event_class = {}
 _event_listener_methods = {}
 _pending_event_listeners = {}
 
+
 def _build_cls_key(cls):
     """
     Builds a key for given class.
@@ -38,7 +40,8 @@ def _build_cls_key(cls):
     :return: A key.
     :rtype: str
     """
-    return f'{cls.__module__}.{cls.__name__}'
+    return f"{cls.__module__}.{cls.__name__}"
+
 
 def _is_function(fn) -> bool:
     """
@@ -51,6 +54,7 @@ def _is_function(fn) -> bool:
     function_to_check = _unwrap_function(fn)
     result = callable(function_to_check)
     return result
+
 
 def _unwrap_function(fn) -> Callable:
     """
@@ -65,6 +69,7 @@ def _unwrap_function(fn) -> Callable:
         result = getattr(result, "__func__")
     return result
 
+
 def _build_func_key(fn):
     """
     Builds a key for given function.
@@ -76,6 +81,7 @@ def _build_func_key(fn):
     func = _unwrap_function(fn)
     return func
 
+
 def _classes_by_key(key):
     """
     Retrieves the classes annotated under given key.
@@ -86,7 +92,8 @@ def _classes_by_key(key):
     """
     return [m[1] for m in inspect.getmembers(key, inspect.isclass)]
 
-def _add_to_pending(func:Callable, eventClass: Type[Any], store:Dict):
+
+def _add_to_pending(func: Callable, eventClass: Type[Any], store: Dict):
     """
     Adds given function (specifically a derived value) in a list.
     :param value: The value to annotate.
@@ -98,7 +105,8 @@ def _add_to_pending(func:Callable, eventClass: Type[Any], store:Dict):
     """
     store[_build_func_key(func)] = eventClass
 
-def _add_wrapper(func:Callable, eventClass: Type[Any]):
+
+def _add_wrapper(func: Callable, eventClass: Type[Any]):
     """
     Annotates given wrapper.
     :param func: The wrapper.
@@ -108,21 +116,26 @@ def _add_wrapper(func:Callable, eventClass: Type[Any]):
     """
     _add_to_pending(_unwrap_function(func), eventClass, _pending_event_listeners)
 
+
 def listen(eventClass: Type[Any]):
     """
     Decorator to annotate an event listener.
     :param eventClass: The class of the event.
     :type eventClass: pythoneda.Event
     """
+
     def decorator(func: Callable):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
+
         _add_wrapper(wrapper, eventClass)
         return wrapper
+
     return decorator
 
-def _is_listen_method(fn:Callable) -> bool:
+
+def _is_listen_method(fn: Callable) -> bool:
     """
     Checks whether a function is annotated with the @listen decorator.
     :param fn: The function to check.
@@ -131,22 +144,51 @@ def _is_listen_method(fn:Callable) -> bool:
     :rtype: bool
     """
     from .event_listener import _pending_event_listeners
-    func = _unwrap_function(fn)
-    return isinstance(fn, classmethod) and _is_function(func) and _build_func_key(func) in _pending_event_listeners
 
-def _process_pending_event_listeners(cls:Type[Any]):
+    func = _unwrap_function(fn)
+    return (
+        isinstance(fn, classmethod)
+        and _is_function(func)
+        and _build_func_key(func) in _pending_event_listeners
+    )
+
+
+#    return _is_function(func) and _build_func_key(func) in _pending_event_listeners
+
+
+def _process_pending_event_listeners(cls: Type[Any]):
     """
     Processes all pending event listeners of given class.
     :param cls: The class holding the event listeners.
     :type cls: Type[Any]
     """
-    from .event_listener import _pending_event_listeners, _event_listeners, _event_listener_methods
+    from .event_listener import (
+        _pending_event_listeners,
+        _event_listeners,
+        _event_listener_methods,
+    )
+
     for name, listener in vars(cls).items():
         if _is_listen_method(listener):
             # First, @classmethod. Then, @listen. That's why we are passing `listener.__func__, which is our @listen function`
-            _process_pending_event_listener(cls, listener, _pending_event_listeners, _event_listeners, _event_listeners_by_event_class, _event_listener_methods)
+            _process_pending_event_listener(
+                cls,
+                listener,
+                _pending_event_listeners,
+                _event_listeners,
+                _event_listeners_by_event_class,
+                _event_listener_methods,
+            )
 
-def _process_pending_event_listener(cls:Type[Any], listener:Callable, pending:List, listeners:Dict, listenersByEventClass:Dict, methods:Dict):
+
+def _process_pending_event_listener(
+    cls: Type[Any],
+    listener: Callable,
+    pending: List,
+    listeners: Dict,
+    listenersByEventClass: Dict,
+    methods: Dict,
+):
     """
     Processes a pending event listener.
     :param cls: The class holding the event listener.
@@ -170,16 +212,21 @@ def _process_pending_event_listener(cls:Type[Any], listener:Callable, pending:Li
             aux_listeners = []
         aux_listeners.append(pending[_build_func_key(func)])
         listeners[cls_key] = aux_listeners
-        aux_listeners_by_event_class = listenersByEventClass.get(pending[_build_func_key(func)], None)
+        aux_listeners_by_event_class = listenersByEventClass.get(
+            pending[_build_func_key(func)], None
+        )
         if aux_listeners_by_event_class is None:
             aux_listeners_by_event_class = []
         aux_listeners_by_event_class.append(cls)
-        listenersByEventClass[pending[_build_func_key(func)]] = aux_listeners_by_event_class
+        listenersByEventClass[
+            pending[_build_func_key(func)]
+        ] = aux_listeners_by_event_class
         aux_methods = methods.get(cls_key, None)
         if aux_methods is None:
             aux_methods = {}
         aux_methods[pending[_build_func_key(func)]] = func
         methods[cls_key] = aux_methods
+
 
 def _propagate_event_listeners(cls):
     """
@@ -188,6 +235,7 @@ def _propagate_event_listeners(cls):
     :type cls: type
     """
     from pythoneda.event_listener import _event_listeners
+
     cls_key = _build_cls_key(cls)
     for current_parent in cls.mro():
         parent_cls_key = _build_cls_key(current_parent)
@@ -197,6 +245,7 @@ def _propagate_event_listeners(cls):
             for event_listener in _event_listeners[parent_cls_key]:
                 if not event_listener in _event_listeners[cls_key]:
                     _event_listeners[cls_key].append(event_listener)
+
 
 class EventListener(BaseObject, abc.ABC):
     """
@@ -222,6 +271,7 @@ class EventListener(BaseObject, abc.ABC):
         :rtype: Dict
         """
         from pythoneda.event_listener import _event_listeners
+
         return _event_listeners
 
     @classmethod
@@ -232,6 +282,7 @@ class EventListener(BaseObject, abc.ABC):
         :rtype: Dict
         """
         from pythoneda.event_listener import _event_listeners_by_event_class
+
         return _event_listeners_by_event_class
 
     @classmethod
@@ -242,6 +293,7 @@ class EventListener(BaseObject, abc.ABC):
         :rtype: Dict
         """
         from pythoneda.event_listener import _event_listener_methods
+
         return _event_listener_methods
 
     @classmethod
@@ -275,7 +327,7 @@ class EventListener(BaseObject, abc.ABC):
         return result
 
     @classmethod
-    def listen_method_for(cls, eventClass:Type[Any]) -> Callable:
+    def listen_method_for(cls, eventClass: Type[Any]) -> Callable:
         """
         Retrieves the @listen() method for given event, in this class.
         :param eventClass: The event class.
@@ -303,9 +355,11 @@ class EventListener(BaseObject, abc.ABC):
         for listener in listeners:
             method = listener.listen_method_for(event.__class__)
             if method is None:
-                EventListener.logger().error(f'Cannot find @listen({cls.full_class_name(event.__class__)} method on {cls.full_class_name(listener)}')
+                EventListener.logger().error(
+                    f"Cannot find @listen({cls.full_class_name(event.__class__)}) method on {cls.full_class_name(listener)}"
+                )
             else:
-                result.append(await method(cls, event))
+                result.append(await method(listener, event))
         return result
 
     @classmethod
@@ -319,5 +373,10 @@ class EventListener(BaseObject, abc.ABC):
         for current_parent in cls.mro():
             _process_pending_event_listeners(current_parent)
         _propagate_event_listeners(cls)
-        from .event_listener import _pending_event_listeners, _event_listeners, _event_listener_methods
+        from .event_listener import (
+            _pending_event_listeners,
+            _event_listeners,
+            _event_listener_methods,
+        )
+
         del _pending_event_listeners

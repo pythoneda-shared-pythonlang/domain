@@ -1,4 +1,4 @@
-# PythonEDA/base
+# domain
 
 This package provides support for event-driven architectures in Python, following the hexagonal architecture layout, and encouraging domain-driven design.
 
@@ -10,8 +10,25 @@ PythonEDA/base provides:
 - Abstract entity class to derive yours from;
 - ValueObject with decorators to provide `__str__()`, `__repr__()`, `__hash__()` and `__eq__()` for you.
 
-Currenty domains modelled so far:
-- [Python packages](https://github.com/pythoneda/python-packages "Python packages' github repository"): Domain of Python packages.
-- [Git Python](https://github.com/pythoneda/git-python "git-python' github repository"): Domain of Git repositories of Python projects.
-- [Nix flakes' github repository](https://github.com/pythoneda/nix-flakes "Nix flakes' github repository"): Domain of Nix flakes.
+## How to declare it in your flake
 
+Check the latest tag of the artifact repository: https://github.com/pythoneda-shared-pythoneda/domain-artifact/tags, and use it instead of the `[version]` placeholder below.
+
+```nix
+{
+  description = "[..]";
+  inputs = rec {
+    [..]
+    pythoneda-shared-pythoneda-domain = {
+      [optional follows]
+      url =
+        "github:pythoneda-shared-pythoneda/domain-artifact/[version]?dir=domain";
+    };
+  };
+  outputs = [..]
+};
+```
+
+If your project depends upon [https://github.com/nixos/nixpkgs](nixpkgs "nixpkgs") and/or [https://github.com/numtide/flake-utils](flake-utils "flake-utils"), you might want to pin them under the `[optional follows]` above.
+
+The Nix flake is under the [https://github.com/pythoneda-shared-pythoneda/domain-artifact/tree/main/domain](domain "domain") folder.

@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import abc
 from pythoneda import Port
 
+
 class PrimaryPort(Port, abc.ABC):
     """
     Input ports to the domain.
@@ -33,6 +34,7 @@ class PrimaryPort(Port, abc.ABC):
     Collaborators:
         - Application that resolves the adapters for PrimaryPorts.
     """
+
     def __init__(self):
         """
         Creates a new instance.
@@ -45,7 +47,7 @@ class PrimaryPort(Port, abc.ABC):
         :return: The priority. The higher the value, the lower the priority.
         :rtype: int
         """
-        return 100
+        return self.__class__.default_priority()
 
     @abc.abstractmethod
     async def accept(self, app):
@@ -62,9 +64,18 @@ class PrimaryPort(Port, abc.ABC):
         """
         Retrieves whether this primary port should be instantiated when
         "one-shot" behavior is active.
-        It should return False unless the port listens to future messages
+        It should return False if the port listens to future messages
         from outside.
         :return: True in such case.
         :rtype: bool
         """
         return False
+
+    @classmethod
+    def default_priority(cls) -> int:
+        """
+        Retrieves the default priority of the primary port.
+        :return: The priority. The higher the value, the lower the priority.
+        :rtype: int
+        """
+        return 100

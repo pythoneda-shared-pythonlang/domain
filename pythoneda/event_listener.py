@@ -114,7 +114,8 @@ def _add_wrapper(func: Callable, eventClass: Type[Any]):
     :param eventClass: The class of the event.
     :type eventClass: pythoneda.Event
     """
-    _add_to_pending(_unwrap_function(func), eventClass, _pending_event_listeners)
+    unwrapped = _unwrap_function(func)
+    _add_to_pending(unwrapped, eventClass, _pending_event_listeners)
 
 
 def listen(eventClass: Type[Any]):
@@ -179,6 +180,18 @@ def _process_pending_event_listeners(cls: Type[Any]):
                 _event_listeners_by_event_class,
                 _event_listener_methods,
             )
+    for current_parent in cls.mro():
+        for name, listener in vars(current_parent).items():
+            if _is_listen_method(listener):
+                # First, @classmethod. Then, @listen. That's why we are passing `listener.__func__, which is our @listen function`
+                _process_pending_event_listener(
+                    cls,
+                    listener,
+                    _pending_event_listeners,
+                    _event_listeners,
+                    _event_listeners_by_event_class,
+                    _event_listener_methods,
+                )
 
 
 def _process_pending_event_listener(
@@ -228,7 +241,7 @@ def _process_pending_event_listener(
         methods[cls_key] = aux_methods
 
 
-def _propagate_event_listeners(cls):
+def _propagate_event_listeners_upwards(cls):
     """
     Propagates event listeners from given class' parents.
     :param cls: The class holding the listeners.
@@ -237,11 +250,11 @@ def _propagate_event_listeners(cls):
     from pythoneda.event_listener import _event_listeners
 
     cls_key = _build_cls_key(cls)
+    if cls_key not in _event_listeners.keys():
+        _event_listeners[cls_key] = []
     for current_parent in cls.mro():
         parent_cls_key = _build_cls_key(current_parent)
         if parent_cls_key in _event_listeners.keys():
-            if cls_key not in _event_listeners.keys():
-                _event_listeners[cls_key] = []
             for event_listener in _event_listeners[parent_cls_key]:
                 if not event_listener in _event_listeners[cls_key]:
                     _event_listeners[cls_key].append(event_listener)
@@ -305,24 +318,34 @@ class EventListener(BaseObject, abc.ABC):
         :return: The matching listeners.
         :rtype: List[Type]
         """
-        result = EventListener.listeners_by_event_class().get(eventClass, [])
-        EventListener.listeners_by_event_class()[eventClass] = result
+        aux = EventListener.listeners_by_event_class().get(eventClass, [])
+        EventListener.listeners_by_event_class()[eventClass] = aux
+
+        result = [
+            clz
+            for clz in sorted(aux, key=cls._get_priority)
+            if not inspect.isabstract(clz)
+        ]
+
         return result
 
     @classmethod
-    def get_all_subclasses(cls, parentClass: Type) -> List[Type]:
+    def delegate_priority(cls, primaryPort) -> int:
         """
-        Retrieves all subclasses of given parent class.
-        :param parentClass: The parent class.
-        :type parentClass: Type
-        :return: The subclasses.
-        :rtype: List[Type]
+        Delegates the priority information to given primary port.
+        :param primaryPort: The primary port.
+        :type primaryPort: type[pythoneda.PrimaryPort]
+        :return: Such priority.
+        :rtype: int
         """
-        result = []
+        result = -1
+        if cls.has_default_priority_method(primaryPort):
+            result = result = primaryPort.default_priority()
 
-        for subclass in parentClass.__subclasses__():
-            result.append(subclass)
-            result.extend(cls.get_all_subclasses(subclass))
+        if cls.has_priority_method(primaryPort):
+            instance = cls.get_primary_port_instance(primaryPort)
+            if instance:
+                result = instance.priority()
 
         return result
 
@@ -340,6 +363,25 @@ class EventListener(BaseObject, abc.ABC):
         return methods.get(eventClass, None)
 
     @classmethod
+    def _get_priority(cls, eventListener: Type[Any]) -> int:
+        """
+        Retrieves the priority of given listener, or 100 if it doesn't define it.
+        :param eventListener: The event listener.
+        :type eventListener: Type[Any]
+        :return: The priority of the listener. The lower, the more preferred.
+        :rtype: int
+        """
+        try:
+            result = eventListener.priority()
+        except AttributeError:
+            pass
+
+        if result is None:
+            result = 100
+
+        return result
+
+    @classmethod
     async def accept(cls, event: Event):
         """
         Notification of a supported event.
@@ -349,17 +391,15 @@ class EventListener(BaseObject, abc.ABC):
         :rtype: List
         """
         result = []
-        listeners = EventListener.listeners_for(event.__class__)
-        if len(listeners) == 0:
-            raise UnsupportedEvent(event)
-        for listener in listeners:
-            method = listener.listen_method_for(event.__class__)
-            if method is None:
-                EventListener.logger().error(
-                    f"Cannot find @listen({cls.full_class_name(event.__class__)}) method on {cls.full_class_name(listener)}"
-                )
-            else:
-                result.append(await method(listener, event))
+        method = cls.listen_method_for(event.__class__)
+        if method is None:
+            EventListener.logger().error(
+                f"Cannot find @listen({cls.full_class_name(event.__class__)}) method on {cls.full_class_name(cls)}"
+            )
+        else:
+            aux = await method(cls, event)
+            if aux is not None:
+                result.append(aux)
         return result
 
     @classmethod
@@ -370,9 +410,10 @@ class EventListener(BaseObject, abc.ABC):
         :type kwargs: Dict
         """
         super().__init_subclass__(**kwargs)
-        for current_parent in cls.mro():
-            _process_pending_event_listeners(current_parent)
-        _propagate_event_listeners(cls)
+        _process_pending_event_listeners(cls)
+        #        for current_parent in cls.mro():
+        #            _process_pending_event_listeners(current_parent)
+        _propagate_event_listeners_upwards(cls)
         from .event_listener import (
             _pending_event_listeners,
             _event_listeners,

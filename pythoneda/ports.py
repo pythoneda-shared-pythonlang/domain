@@ -20,9 +20,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import importlib
 from pythoneda import Port
-from typing import Dict
+from typing import Dict, List
 
-class Ports():
+
+class Ports:
     """
     Registry of available ports.
 
@@ -37,9 +38,10 @@ class Ports():
         - Adapter implementations in the infrastructure layer.
         - Application that provides the adapters when running the bounded context.
     """
+
     _singleton = None
 
-    def __init__(self, mappings: Dict[Port, Port]):
+    def __init__(self, mappings: Dict[Port, List[Port]]):
         """
         Creates a new instance.
         :param mappings: The adapter mappings.
@@ -48,11 +50,11 @@ class Ports():
         self._mappings = mappings
 
     @classmethod
-    def initialize(cls, mappings: Dict[Port, Port]):
+    def initialize(cls, mappings: Dict[Port, List[Port]]):
         """
         Initializes the singleton.
         :param mappings: The adapter mappings.
-        :type mappings: Dict
+        :type mappings: Dict[Port, List[Port]]
         """
         cls._singleton = Ports(mappings)
 
@@ -66,7 +68,10 @@ class Ports():
         result = cls._singleton
         if result is None:
             import logging
-            logging.getLogger("pythoneda.Ports").warning("Ports not initialized. Adapters won't be available")
+
+            logging.getLogger("pythoneda.Ports").warning(
+                "Ports not initialized. Adapters won't be available"
+            )
             result = cls({})
         return result
 
@@ -78,7 +83,21 @@ class Ports():
         :return: The adapter.
         :rtype: Port
         """
-        return self._mappings.get(port, None)
+        result = None
+        adapters = self.resolve_all(port)
+        if len(adapters) > 0:
+            result = adapters[0]
+        return result
+
+    def resolve_all(self, port: Port) -> List[Port]:
+        """
+        Resolves given port.
+        :param port: The Port to resolve.
+        :type port: Port
+        :return: The adapter.
+        :rtype: Port
+        """
+        return self._mappings.get(port, [])
 
     def resolve_by_module_name(self, moduleName: str, portName: str):
         """

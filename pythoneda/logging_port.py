@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from .port import Port
 from abc import abstractmethod
 
+
 class LoggingPort(Port):
     """
     Port for logging mechanisms.
@@ -33,6 +34,7 @@ class LoggingPort(Port):
     Collaborators:
         - None
     """
+
     def __init__(self):
         """
         Initializes a new LoggingPort instance.
@@ -40,7 +42,7 @@ class LoggingPort(Port):
         super().__init__()
 
     @abstractmethod
-    def logger(self, category:str):
+    def logger(self, category: str = None):
         """
         Retrieves the logger instance.
         :param category: The logging category.

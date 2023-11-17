@@ -18,9 +18,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from .port import Port
 import importlib
-from pythoneda import Port
-from typing import Dict, List
+from typing import Dict, List, Type
 
 
 class Ports:
@@ -75,29 +75,60 @@ class Ports:
             result = cls({})
         return result
 
-    def resolve(self, port: Port) -> Port:
+    def resolve(self, port: Type[Port]) -> Port:
         """
         Resolves given port.
         :param port: The Port to resolve.
-        :type port: Port
+        :type port: Type[Port]
         :return: The adapter.
-        :rtype: Port
+        :rtype: pythoneda.Port
         """
         result = None
         adapters = self.resolve_all(port)
         if len(adapters) > 0:
-            result = adapters[0]
+            result = self._instantiate_adapter(adapters[0])
         return result
 
-    def resolve_all(self, port: Port) -> List[Port]:
+    def _instantiate_adapter(self, adapterClass: Type[Port]) -> Port:
+        """
+        Instantiates given adapter.
+        :param adapter: The adapter class.
+        :type adapter: Type[pythoneda.Port]
+        :return: The adapter instance.
+        :rtype: pythoneda.Port
+        """
+        return adapterClass.instantiate()
+
+    @classmethod
+    def sort_by_priority(cls, otherClass: Type) -> int:
+        """
+        Delegates the priority information to given primary port.
+        :param otherClass: The primary port.
+        :type otherClass: Type
+        :return: Such priority.
+        :rtype: int
+        """
+        result = -1
+        if otherClass.has_class_method("default_priority"):
+            result = otherClass.default_priority()
+
+        if otherClass.has_method("priority"):
+            instance = otherClass.instantiate()
+            if instance:
+                result = instance.priority()
+
+        return result
+
+    def resolve_all(self, port: Type[Port]) -> List[Port]:
         """
         Resolves given port.
         :param port: The Port to resolve.
-        :type port: Port
+        :type port: Type[pythoneda.Port]
         :return: The adapter.
-        :rtype: Port
+        :rtype: List[pythoneda.Port]
         """
-        return self._mappings.get(port, [])
+        candidates = self._mappings.get(port, [])
+        return sorted(candidates, key=self.__class__.sort_by_priority)
 
     def resolve_by_module_name(self, moduleName: str, portName: str):
         """

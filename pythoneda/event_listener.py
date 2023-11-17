@@ -371,6 +371,7 @@ class EventListener(BaseObject, abc.ABC):
         :return: The priority of the listener. The lower, the more preferred.
         :rtype: int
         """
+        result = None
         try:
             result = eventListener.priority()
         except AttributeError:

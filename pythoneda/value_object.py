@@ -41,6 +41,7 @@ _pending_internal_properties = []
 _properties = {}
 _pending_properties = []
 
+
 def _build_func_key(func):
     """
     Builds a key for given function.
@@ -51,6 +52,7 @@ def _build_func_key(func):
     """
     return func.__module__
 
+
 def _build_cls_key(cls):
     """
     Builds a key for given class.
@@ -60,7 +62,8 @@ def _build_cls_key(cls):
     :rtype: str
     """
 
-    return f'{cls.__module__}.{cls.__name__}'
+    return f"{cls.__module__}.{cls.__name__}"
+
 
 def _classes_by_key(key):
     """
@@ -72,7 +75,8 @@ def _classes_by_key(key):
     """
     return [m[1] for m in inspect.getmembers(key, inspect.isclass)]
 
-def _add_to_pending(func:Callable, lst:List, name:str=""):
+
+def _add_to_pending(func: Callable, lst: List, name: str = ""):
     """
     Adds given function (specifically a derived value) in a list.
     :param value: The value to annotate.
@@ -82,6 +86,7 @@ def _add_to_pending(func:Callable, lst:List, name:str=""):
     """
     lst.append(func.__code__)
 
+
 def _add_wrapper(func):
     """
     Annotates given property wrapper.
@@ -89,7 +94,9 @@ def _add_wrapper(func):
     :type func: callable
     """
     from pythoneda.value_object import _pending_properties
+
     _add_to_pending(func, _pending_properties, "properties")
+
 
 def attribute(func):
     """
@@ -97,12 +104,15 @@ def attribute(func):
     :param func: The getter.
     :type func: callable
     """
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
+
     _add_wrapper(wrapper)
 
     return wrapper
+
 
 def sensitive(func):
     """
@@ -110,12 +120,15 @@ def sensitive(func):
     :param func: The getter function to wrap.
     :type func: callable
     """
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return SensitiveValue(func(self, *args, **kwargs))
+
     _add_wrapper(wrapper)
 
     return wrapper
+
 
 def primary_key_attribute(func):
     """
@@ -123,14 +136,18 @@ def primary_key_attribute(func):
     :param func: The getter function to wrap.
     :type func: callable
     """
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
+
     from pythoneda.value_object import _pending_primary_key_properties
+
     _add_to_pending(wrapper, _pending_primary_key_properties, "primary_key_properties")
     _add_wrapper(wrapper)
 
     return wrapper
+
 
 def filter_attribute(func):
     """
@@ -138,14 +155,18 @@ def filter_attribute(func):
     :param func: The getter function to wrap.
     :type func: callable
     """
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
+
     from pythoneda.value_object import _pending_filter_properties
+
     _add_to_pending(wrapper, _pending_filter_properties, "filter_properties")
     _add_wrapper(wrapper)
 
     return wrapper
+
 
 def internal_attribute(func):
     """
@@ -153,14 +174,18 @@ def internal_attribute(func):
     :param func: The getter function to wrap.
     :type func: callable
     """
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
+
     from pythoneda.value_object import _pending_internal_properties
+
     _add_to_pending(wrapper, _pending_internal_properties, "internal_properties")
     return wrapper
 
-def _process_pending_properties(cls:type, delete:bool=False):
+
+def _process_pending_properties(cls: type, delete: bool = False):
     """
     Processes all pending properties of given class.
     :param cls: The class holding the properties.
@@ -168,7 +193,17 @@ def _process_pending_properties(cls:type, delete:bool=False):
     :param delete: Whether to clean up pending properties at the end or not.
     :type delete: bool
     """
-    from pythoneda.value_object import _properties, _pending_properties, _primary_key_properties, _pending_primary_key_properties, _filter_properties, _pending_filter_properties, _internal_properties, _pending_internal_properties
+    from pythoneda.value_object import (
+        _properties,
+        _pending_properties,
+        _primary_key_properties,
+        _pending_primary_key_properties,
+        _filter_properties,
+        _pending_filter_properties,
+        _internal_properties,
+        _pending_internal_properties,
+    )
+
     source = {}
     source["_properties"] = _pending_properties
     source["_primary_key_properties"] = _pending_primary_key_properties
@@ -181,7 +216,12 @@ def _process_pending_properties(cls:type, delete:bool=False):
     dest["_internal_properties"] = _internal_properties
     for name, prop in cls.__dict__.items():
         if isinstance(prop, property):
-            for key in [ "_primary_key_properties", "_filter_properties", "_properties", "_internal_properties" ]:
+            for key in [
+                "_primary_key_properties",
+                "_filter_properties",
+                "_properties",
+                "_internal_properties",
+            ]:
                 _process_pending_property(cls, prop, source[key], dest[key], key)
     if False:
         del _pending_properties
@@ -189,7 +229,10 @@ def _process_pending_properties(cls:type, delete:bool=False):
         del _pending_primary_key_properties
         del _pending_internal_properties
 
-def _process_pending_property(cls:type, prop:property, pending:List, properties:Dict, name:str=""):
+
+def _process_pending_property(
+    cls: type, prop: property, pending: List, properties: Dict, name: str = ""
+):
     """
     Processes a pending property.
     :param cls: The class holding the property.
@@ -210,17 +253,24 @@ def _process_pending_property(cls:type, prop:property, pending:List, properties:
             aux.append(prop)
         properties[cls_key] = aux
 
+
 def _propagate_properties(cls):
     """
     Propagates properties from given class' parents.
     :param cls: The class holding the properties.
     :type cls: type
     """
-    from pythoneda.value_object import _properties, _primary_key_properties, _filter_properties, _internal_properties
+    from pythoneda.value_object import (
+        _properties,
+        _primary_key_properties,
+        _filter_properties,
+        _internal_properties,
+    )
+
     cls_key = _build_cls_key(cls)
     for current_parent in cls.mro():
         parent_cls_key = _build_cls_key(current_parent)
-        for props in [ _properties, _primary_key_properties, _filter_properties ]:
+        for props in [_properties, _primary_key_properties, _filter_properties]:
             if parent_cls_key in props.keys():
                 if cls_key not in props.keys():
                     props[cls_key] = []
@@ -234,6 +284,7 @@ def _propagate_properties(cls):
                 if not prop in _internal_properties[cls_key]:
                     _internal_properties[cls_key].append(prop)
 
+
 def default_json_serializer(obj) -> Dict:
     """
     Uses obj.to_dict() in the JSON serialization process.
@@ -242,10 +293,13 @@ def default_json_serializer(obj) -> Dict:
     :return: A dictionary.
     :rtype: Dict
     """
-    if hasattr(obj, 'to_dict') and callable(obj.to_dict):
+    if hasattr(obj, "to_dict") and callable(obj.to_dict):
         return obj.to_dict()
     else:
-        raise TypeError(f"{obj.__class__.__name__} does not define to_dict() to serialize to JSON")
+        raise TypeError(
+            f"{obj.__class__.__name__} does not define to_dict() to serialize to JSON"
+        )
+
 
 class ValueObject(BaseObject):
     """
@@ -260,6 +314,7 @@ class ValueObject(BaseObject):
     Collaborators:
         - None
     """
+
     @classmethod
     def empty(cls):
         """
@@ -279,6 +334,7 @@ class ValueObject(BaseObject):
         result = []
         key = _build_cls_key(cls)
         from pythoneda.value_object import _primary_key_properties
+
         if key in _primary_key_properties.keys():
             result = list(map(lambda p: p.fget.__name__, _primary_key_properties[key]))
         return result
@@ -304,6 +360,7 @@ class ValueObject(BaseObject):
         :rtype: List
         """
         from pythoneda.value_object import _properties, _internal_properties
+
         result = []
         key = _build_cls_key(cls)
         if key in _properties:
@@ -374,7 +431,7 @@ class ValueObject(BaseObject):
         cls_key = _build_cls_key(cls)
         from pythoneda.value_object import _internal_properties
 
-    def _is_json_compatible(self, obj:Any) -> bool:
+    def _is_json_compatible(self, obj: Any) -> bool:
         """
         Checks if given value is already compatible with json format.
         :param obj: The value.
@@ -382,9 +439,9 @@ class ValueObject(BaseObject):
         :return: True in such case.
         :rtype: bool
         """
-        return callable(getattr(obj, 'to_json', None))
+        return callable(getattr(obj, "to_json", None))
 
-    def _property_to_json(self, prop:property, includeNulls:bool=True) -> str:
+    def _property_to_json(self, prop: property, includeNulls: bool = True) -> str:
         """
         Builds a json-compatible representation of given property.
         :param prop: The property.
@@ -399,7 +456,7 @@ class ValueObject(BaseObject):
             result = f'"{prop.fget.__name__}": {self._value_to_json(prop.fget(self), includeNulls)}'
         return result
 
-    def _property_to_tuple(self, prop:property, includeNulls:bool=True) -> tuple:
+    def _property_to_tuple(self, prop: property, includeNulls: bool = True) -> tuple:
         """
         Builds a tuble of name, value of given property.
         :param prop: The property.
@@ -417,7 +474,7 @@ class ValueObject(BaseObject):
         return (name, value)
 
     @classmethod
-    def _property_name(cls, prop:property) -> str:
+    def _property_name(cls, prop: property) -> str:
         """
         Retrieves the name of the property.
         :param prop: The property.
@@ -430,7 +487,7 @@ class ValueObject(BaseObject):
             result = prop.fget.__name__
         return result
 
-    def _value_to_json(self, value:Any, includeNulls:bool=True) -> str:
+    def _value_to_json(self, value: Any, includeNulls: bool = True) -> str:
         """
         Builds a json-compatible representation of given value.
         :param value: The value.
@@ -442,7 +499,10 @@ class ValueObject(BaseObject):
         """
         result = None
         if callable(value):
-            value = value.fget(self)
+            if inspect.ismethod(value):
+                value = value(self)
+            else:
+                value = value.fget(self)
         if value:
             if type(value) is list or type(value) is dict:
                 items = list(map(self._value_to_json, value))
@@ -455,7 +515,7 @@ class ValueObject(BaseObject):
             result = "null"
         return result
 
-    def _property_to_json_excluding_nulls(self, prop:property) -> str:
+    def _property_to_json_excluding_nulls(self, prop: property) -> str:
         """
         Builds a json-compatible representation of given property, excluding nulls.
         :param prop: The property.
@@ -465,7 +525,9 @@ class ValueObject(BaseObject):
         """
         return self._property_to_json(attribute, includeNulls=False)
 
-    def _properties_to_json(self, properties:List[property], includeNulls:bool=True) -> List[str]:
+    def _properties_to_json(
+        self, properties: List[property], includeNulls: bool = True
+    ) -> List[str]:
         """
         Builds a json-compatible representation of given attributes.
         :param properties: The properties.
@@ -476,9 +538,16 @@ class ValueObject(BaseObject):
         :rtype: List[str]
         """
         if includeNulls:
-            result = list(filter(lambda x: x is not None, map(self._property_to_json, properties)))
+            result = list(
+                filter(lambda x: x is not None, map(self._property_to_json, properties))
+            )
         else:
-            result = list(filter(lambda x: x is not None, map(self._property_to_json_excluding_nulls, properties)))
+            result = list(
+                filter(
+                    lambda x: x is not None,
+                    map(self._property_to_json_excluding_nulls, properties),
+                )
+            )
 
         return result
 
@@ -524,7 +593,7 @@ class ValueObject(BaseObject):
         return json.dumps(self.to_dict(), default=default_json_serializer)
 
     @classmethod
-    def from_json(cls, text:str):
+    def from_json(cls, text: str):
         """
         Builds an instance based on given text.
         :param text: The serialized instance.
@@ -536,15 +605,16 @@ class ValueObject(BaseObject):
         try:
             result = cls.from_dict(json.loads(text))
         except json.JSONDecodeError as e:
-            ValueObject.logger().error(f'decoding error: {e}')
+            ValueObject.logger().error(f"decoding error: {e}")
         except Exception as e:
-            ValueObject.logger().error(f'Unexpected error: {e}')
+            ValueObject.logger().error(f"Unexpected error: {e}")
             import traceback
+
             traceback.print_exc()
         return result
 
     @classmethod
-    def from_dict(cls, contents:Dict):
+    def from_dict(cls, contents: Dict):
         """
         Builds an instance based on given dictionary.
         :param contents: The instance properties.
@@ -552,13 +622,13 @@ class ValueObject(BaseObject):
         :return: A reconstructed instance.
         :rtype: pythoneda.ValueObject
         """
-        module_name, class_name = contents["_internal"]["class"].rsplit('.', 1)
+        module_name, class_name = contents["_internal"]["class"].rsplit(".", 1)
         module = importlib.import_module(module_name)
         actual_class = getattr(module, class_name)
         return actual_class.new_from_json(contents)
 
     @classmethod
-    def new_from_json(cls, dictFromJson:Dict):
+    def new_from_json(cls, dictFromJson: Dict):
         """
         Builds an instance based on given dictionary.
         :param dictFromJson: The dictionary.
@@ -587,7 +657,7 @@ class ValueObject(BaseObject):
         try:
             self.__setattr__(varName, varValue)
         except AttributeError:
-            self.__setattr__(f'_{varName}', varValue)
+            self.__setattr__(f"_{varName}", varValue)
 
     def __str__(self) -> str:
         """
@@ -602,11 +672,13 @@ class ValueObject(BaseObject):
         internal = []
         if key in _internal_properties.keys():
             internal = self._properties_to_json(_internal_properties[key])
-            internal.append(f'"class": "{self.__class__.__module__}.{self.__class__.__name__}"')
-            aux.append('"_internal": { ' + ', '.join(internal) + ' }')
+            internal.append(
+                f'"class": "{self.__class__.__module__}.{self.__class__.__name__}"'
+            )
+            aux.append('"_internal": { ' + ", ".join(internal) + " }")
 
         if len(aux) > 0:
-            result = '{ ' + ', '.join(aux) + ' }'
+            result = "{ " + ", ".join(aux) + " }"
         else:
             result = super().__str__()
 
@@ -622,10 +694,12 @@ class ValueObject(BaseObject):
         aux = []
         key = _build_cls_key(self.__class__)
         if key in _primary_key_properties.keys():
-            aux = self._properties_to_json(_primary_key_properties[key], includeNulls=False)
+            aux = self._properties_to_json(
+                _primary_key_properties[key], includeNulls=False
+            )
 
         if len(aux) > 0:
-            result = '{ ' + ', '.join(aux) + ' }'
+            result = "{ " + ", ".join(aux) + " }"
         else:
             result = super().__repr__()
 

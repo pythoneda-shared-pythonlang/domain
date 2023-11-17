@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .logging_port import LoggingPort
 from .logging_port_fallback import LoggingPortFallback
+import inspect
 from .ports import Ports
 import re
 from typing import Type
@@ -150,9 +151,109 @@ class BaseObject:
         if cls._logging_port is None:
             cls._logging_port = LoggingPortFallback()
 
-        if category is None:
-            cat = cls.simplify_class_name(cls.full_class_name(cls))
-        else:
-            cat = category
+        aux = category
+        if aux is None:
+            aux = cls.simplify_class_name(cls.full_class_name(cls))
 
-        return cls._logging_port.logger(cat)
+        return cls._logging_port.logger(aux)
+
+    @classmethod
+    def has_method(cls, methodName: str) -> bool:
+        """
+        Checks if this class defines a given method or not.
+        :param methodName: The method name.
+        :type methodName: str
+        :return: True if the class defines that method.
+        :rtype: bool
+        """
+        return hasattr(cls, methodName) and callable(getattr(cls, methodName))
+
+    @classmethod
+    def has_class_method(cls, methodName: str) -> bool:
+        """
+        Checks if this class defines a given class method or not.
+        :param methodName: The method name.
+        :type methodName: str
+        :return: True if the class defines that class method.
+        :rtype: bool
+        """
+        result = False
+        if cls.has_method(methodName):
+            method = getattr(cls, methodName)
+            result = isinstance(method, classmethod)
+        return result
+
+    @classmethod
+    def sort_by_priority(cls, otherClass: Type) -> int:
+        """
+        Delegates the priority information to given primary port.
+        :param otherClass: The primary port.
+        :type otherClass: Type
+        :return: Such priority.
+        :rtype: int
+        """
+        return Ports.sort_by_priority(otherClass)
+
+    @classmethod
+    def has_default_constructor(cls) -> bool:
+        """
+        Checks if this class defines the default constructor or not.
+        :return: True in such case.
+        :rtype: bool
+        """
+        init_signature = inspect.signature(cls.__init__)
+
+        # Check if all parameters except 'self' have defaults
+        parameters = init_signature.parameters.values()
+        result = all(
+            p.default is not inspect.Parameter.empty or p.name == "self"
+            for p in parameters
+        )
+
+        return result
+
+    @classmethod
+    def method_has_no_parameters(cls, methodName: str) -> bool:
+        """
+        Checks if this class defines given method, and it doesn't define parameters.
+        :return: True in such case.
+        :rtype: bool
+        """
+        result = False
+        if cls.has_method(methodName):
+            method = getattr(cls, methodName)
+            init_signature = inspect.signature(method)
+
+            first_parameter = "self"
+            if isinstance(method, classmethod):
+                first_parameter = "cls"
+
+            # Check if all parameters except 'self' (or 'cls' if class method) have defaults
+            parameters = init_signature.parameters.values()
+            result = all(
+                p.default is not inspect.Parameter.empty or p.name == first_parameter
+                for p in parameters
+            )
+
+        return result
+
+    @classmethod
+    def instantiate(cls):
+        """
+        Retrieves an instance, if possible.
+        :return: Such instance.
+        :rtype: pythoneda.BaseObject
+        """
+        from pythoneda import Ports
+
+        result = None
+        if cls.has_default_constructor():
+            result = cls()
+        if (
+            result is None
+            and cls.has_class_method("instance")
+            and cls.method_exists_and_has_no_parameters("instance")
+        ):
+            result = cls.instance()
+
+        return result

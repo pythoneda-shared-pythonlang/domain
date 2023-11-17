@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from abc import ABC
 
+
 class Port(ABC):
     """
     Represents a primary or secondary port.
@@ -35,6 +36,7 @@ class Port(ABC):
         - Application that resolve Ports with adapters when running the bounded context.
         - Ports maintain a registry of Port instances.
     """
+
     def __init__(self):
         """
         Creates a new instance.

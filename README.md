@@ -7,12 +7,13 @@ In summary, PythonEDA helps you to focus on your domain, and assume all interact
 PythonEDA/base provides:
 - Event support: Event, EventListener, EventEmitter;
 - Port and PrimaryPort interfaces;
+- A Ports class to dynamically resolve port adapters (IoC);
 - Abstract entity class to derive yours from;
 - ValueObject with decorators to provide `__str__()`, `__repr__()`, `__hash__()` and `__eq__()` for you.
 
 ## How to declare it in your flake
 
-Check the latest tag of the artifact repository: https://github.com/pythoneda-shared-pythoneda/domain-artifact/tags, and use it instead of the `[version]` placeholder below.
+Check the latest tag of the definition repository: https://github.com/pythoneda-shared-pythoneda-def/domain/tags, and use it instead of the `[version]` placeholder below.
 
 ```nix
 {
@@ -22,7 +23,7 @@ Check the latest tag of the artifact repository: https://github.com/pythoneda-sh
     pythoneda-shared-pythoneda-domain = {
       [optional follows]
       url =
-        "github:pythoneda-shared-pythoneda/domain-artifact/[version]?dir=domain";
+        "github:pythoneda-shared-pythoneda-def/domain/[version]";
     };
   };
   outputs = [..]
@@ -31,4 +32,4 @@ Check the latest tag of the artifact repository: https://github.com/pythoneda-sh
 
 If your project depends upon [https://github.com/nixos/nixpkgs](nixpkgs "nixpkgs") and/or [https://github.com/numtide/flake-utils](flake-utils "flake-utils"), you might want to pin them under the `[optional follows]` above.
 
-The Nix flake is under the [https://github.com/pythoneda-shared-pythoneda/domain-artifact/tree/main/domain](domain "domain") folder.
+The Nix flake is provided by the [https://github.com/pythoneda-shared-pythoneda-def/domain](pythoneda-shared-pythoneda-def/domain "pythoneda-shared-pythoneda-def/domain") repository.

@@ -41,22 +41,16 @@ class PrimaryPort(Port, abc.ABC):
         """
         super().__init__()
 
-    def priority(self) -> int:
-        """
-        Retrieves the priority of the primary port.
-        :return: The priority. The higher the value, the lower the priority.
-        :rtype: int
-        """
-        return self.__class__.default_priority()
-
     @abc.abstractmethod
-    async def accept(self, app):
+    async def entrypoint(self, app):
         """
         Accepts input on behalf of the given application.
         :param app: The application.
-        :type app: PythonEDA
+        :type app: pythoneda.application.PythonEDA
         """
-        raise NotImplementedError("accept() must be implemented by subclasses")
+        raise NotImplementedError(
+            "entrypoint(app:pythoneda.application.PythonEDA) must be implemented by subclasses"
+        )
 
     @classmethod
     @property
@@ -72,7 +66,7 @@ class PrimaryPort(Port, abc.ABC):
         return False
 
     @classmethod
-    def default_priority(cls) -> int:
+    def priority(cls) -> int:
         """
         Retrieves the default priority of the primary port.
         :return: The priority. The higher the value, the lower the priority.

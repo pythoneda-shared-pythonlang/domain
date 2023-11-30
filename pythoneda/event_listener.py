@@ -230,7 +230,8 @@ def _process_pending_event_listener(
         )
         if aux_listeners_by_event_class is None:
             aux_listeners_by_event_class = []
-        aux_listeners_by_event_class.append(cls)
+        if cls not in aux_listeners_by_event_class:
+            aux_listeners_by_event_class.append(cls)
         listenersByEventClass[
             pending[_build_func_key(func)]
         ] = aux_listeners_by_event_class
@@ -373,7 +374,7 @@ class EventListener(BaseObject, abc.ABC):
         """
         result = None
         try:
-            result = eventListener.priority()
+            result = eventListener.default_priority()
         except AttributeError:
             pass
 

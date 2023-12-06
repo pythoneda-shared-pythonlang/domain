@@ -285,22 +285,6 @@ def _propagate_properties(cls):
                     _internal_properties[cls_key].append(prop)
 
 
-def default_json_serializer(obj) -> Dict:
-    """
-    Uses obj.to_dict() in the JSON serialization process.
-    :param obj: The object to serialize to JSON.
-    :type obj: Any
-    :return: A dictionary.
-    :rtype: Dict
-    """
-    if hasattr(obj, "to_dict") and callable(obj.to_dict):
-        return obj.to_dict()
-    else:
-        raise TypeError(
-            f"{obj.__class__.__name__} does not define to_dict() to serialize to JSON"
-        )
-
-
 class ValueObject(BaseObject):
     """
     A value object.
@@ -441,7 +425,7 @@ class ValueObject(BaseObject):
         """
         return callable(getattr(obj, "to_json", None))
 
-    def _property_to_json(self, prop: property, includeNulls: bool = True) -> str:
+    def _property_to_json(self, prop: property, includeNulls: bool = False) -> str:
         """
         Builds a json-compatible representation of given property.
         :param prop: The property.
@@ -453,10 +437,12 @@ class ValueObject(BaseObject):
         """
         result = None
         if hasattr(prop, "fget"):
-            result = f'"{prop.fget.__name__}": {self._value_to_json(prop.fget(self), includeNulls)}'
+            value = self._value_to_json(prop.fget(self), includeNulls)
+            if value:
+                result = f'"{prop.fget.__name__}": {value}'
         return result
 
-    def _property_to_tuple(self, prop: property, includeNulls: bool = True) -> tuple:
+    def _property_to_tuple(self, prop: property, includeNulls: bool = False) -> tuple:
         """
         Builds a tuble of name, value of given property.
         :param prop: The property.
@@ -487,7 +473,7 @@ class ValueObject(BaseObject):
             result = prop.fget.__name__
         return result
 
-    def _value_to_json(self, value: Any, includeNulls: bool = True) -> str:
+    def _value_to_json(self, value: Any, includeNulls: bool = False) -> str:
         """
         Builds a json-compatible representation of given value.
         :param value: The value.
@@ -505,14 +491,18 @@ class ValueObject(BaseObject):
                 value = value.fget(self)
         if value:
             if type(value) is list or type(value) is dict:
-                items = list(map(self._value_to_json, value))
+                items = list(map(lambda x: self._value_to_json(x, includeNulls), value))
                 result = json.dumps(items)
             elif self._is_json_compatible(value):
-                result = value.to_json()
+                result = f"j{value.to_json()}"
+            elif type(value) is str:
+                result = value
+            elif type(value) is datetime:
+                result = str(value)
             else:
                 result = json.dumps(str(value))
         elif includeNulls:
-            result = "null"
+            result = "NULL"
         return result
 
     def _property_to_json_excluding_nulls(self, prop: property) -> str:
@@ -525,8 +515,18 @@ class ValueObject(BaseObject):
         """
         return self._property_to_json(attribute, includeNulls=False)
 
+    def _property_to_json_including_nulls(self, prop: property) -> str:
+        """
+        Builds a json-compatible representation of given property, including nulls.
+        :param prop: The property.
+        :type prop: property
+        :return: A json representation of given attribute.
+        :rtype: str
+        """
+        return self._property_to_json(attribute, includeNulls=True)
+
     def _properties_to_json(
-        self, properties: List[property], includeNulls: bool = True
+        self, properties: List[property], includeNulls: bool = False
     ) -> List[str]:
         """
         Builds a json-compatible representation of given attributes.
@@ -537,19 +537,12 @@ class ValueObject(BaseObject):
         :return: A list with the json representation of each attribute.
         :rtype: List[str]
         """
-        if includeNulls:
-            result = list(
-                filter(lambda x: x is not None, map(self._property_to_json, properties))
+        return list(
+            filter(
+                lambda x: x is not None,
+                map(lambda x: self._property_to_json(x, includeNulls), properties),
             )
-        else:
-            result = list(
-                filter(
-                    lambda x: x is not None,
-                    map(self._property_to_json_excluding_nulls, properties),
-                )
-            )
-
-        return result
+        )
 
     def _get_attribute_to_json(self, varName) -> str:
         """
@@ -573,7 +566,8 @@ class ValueObject(BaseObject):
         if key in _internal_properties.keys():
             for prop in _internal_properties[key]:
                 name, value = self._property_to_tuple(prop)
-                internal_properties[name] = value
+                if value:
+                    internal_properties[name] = value
         internal = {}
         internal["properties"] = internal_properties
         internal["class"] = f"{self.__class__.__module__}.{self.__class__.__name__}"
@@ -581,8 +575,26 @@ class ValueObject(BaseObject):
         if key in _properties.keys():
             for prop in _properties[key]:
                 name, _ = self._property_to_tuple(prop)
-                result[name] = self._get_attribute_to_json(name)
+                value = self._get_attribute_to_json(name)
+                if value is not None:
+                    result[name] = value
         return result
+
+    @classmethod
+    def default_json_serializer(cls, obj) -> Dict:
+        """
+        Uses obj.to_dict() in the JSON serialization process.
+        :param obj: The object to serialize to JSON.
+        :type obj: Any
+        :return: A dictionary.
+        :rtype: Dict
+        """
+        if hasattr(obj, "to_dict") and callable(obj.to_dict):
+            return obj.to_dict()
+        else:
+            raise TypeError(
+                f"{obj.__class__.__name__} does not define to_dict() to serialize to JSON"
+            )
 
     def to_json(self) -> str:
         """
@@ -590,7 +602,9 @@ class ValueObject(BaseObject):
         :return: The JSON representing this instance.
         :rtype: str
         """
-        return json.dumps(self.to_dict(), default=default_json_serializer)
+        return json.dumps(
+            self.to_dict(), default=self.__class__.default_json_serializer
+        )
 
     @classmethod
     def from_json(cls, text: str):

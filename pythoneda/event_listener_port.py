@@ -22,6 +22,7 @@ import abc
 from pythoneda import BaseObject, Event, EventListener, PrimaryPort
 from typing import Type
 
+
 class EventListenerPort(BaseObject, PrimaryPort, abc.ABC):
     """
     Port able to receive Events.
@@ -44,7 +45,7 @@ class EventListenerPort(BaseObject, PrimaryPort, abc.ABC):
         :param eventClass: The type of Event.
         :type eventClass: Type[Event]
         """
-        EventListenerPort.logger(EventListenerPort.__module__).info(f'{listener} listening to {eventClass} events')
+        EventListenerPort.logger().info(f"{listener} listening to {eventClass} events")
         return EventListener.listen(listener, eventClass)
 
     @classmethod
@@ -56,5 +57,5 @@ class EventListenerPort(BaseObject, PrimaryPort, abc.ABC):
         :return: Potentially, a list of triggered events in response.
         :rtype: List
         """
-        EventListenerPort.logger(EventListenerPort.__module__).info(f'Accepting event {event}')
+        EventListenerPort.logger().info(f"Accepting event {event}")
         return await EventListener.accept(event)

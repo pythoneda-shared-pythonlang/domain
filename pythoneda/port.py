@@ -37,8 +37,27 @@ class Port(ABC):
         - Ports maintain a registry of Port instances.
     """
 
+    _enabled = False
+
     def __init__(self):
         """
         Creates a new instance.
         """
         super().__init__()
+
+    @classmethod
+    def enable(cls):
+        """
+        Enables this port.
+        """
+        cls._enabled = True
+
+    @classmethod
+    @property
+    def enabled(cls) -> bool:
+        """
+        Checks whether this port is enabled or not.
+        :return: Such condition.
+        :rtype: bool
+        """
+        return cls._enabled

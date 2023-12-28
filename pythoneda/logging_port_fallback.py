@@ -18,6 +18,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
+
 class LoggingFallback:
     """
     Fallback logging.
@@ -109,7 +111,8 @@ class LoggingFallback:
         """
         self._log("trace", message)
 
-class LoggingPortFallback():
+
+class LoggingPortFallback:
     """
     Fallback logging.
 
@@ -121,13 +124,15 @@ class LoggingPortFallback():
     Collaborators:
     - None
     """
+
     def __init__(self):
         """
         Initializes a new LoggingPortFallback instance.
         """
         super().__init__()
 
-    def logger(self, category: str):
+    @staticmethod
+    def logger(category: str):
         """
         Retrieves the logger instance.
         :param category: The logging category.

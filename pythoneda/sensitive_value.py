@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from pythoneda import BaseObject
 
+
 class SensitiveValue(BaseObject):
     """
     Prevents sensitive values to be exposed.
@@ -28,7 +29,8 @@ class SensitiveValue(BaseObject):
 
     Responsibilities:
         - Wraps a sensitive value.
-        - Overrides "__eq__()", "__str__()", "__repr__()" and "__hash__()" to avoid leaking the sensitive value, while preserving identity invariants.
+        - Overrides "__eq__()", "__str__()", "__repr__()" and "__hash__()" to avoid leaking the sensitive value,
+        while preserving identity invariants.
 
     Collaborators:
         - Any primitive type or class to protect.

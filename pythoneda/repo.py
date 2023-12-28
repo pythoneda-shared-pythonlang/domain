@@ -22,6 +22,7 @@ import abc
 from pythoneda import Port
 from typing import Dict, List
 
+
 class Repo(Port, abc.ABC):
     """
     A repository for a specific entity class.
@@ -34,12 +35,14 @@ class Repo(Port, abc.ABC):
     Collaborators:
         - Entity: The items persisted outside.
     """
+
     def __init__(self, entityClass):
         """
         Creates a new instance.
         :param entityClass: The associated Entity class.
         :type entityClass: Type[Entity]
         """
+        super().__init__()
         self._entity_class = entityClass
 
     @property
@@ -52,11 +55,11 @@ class Repo(Port, abc.ABC):
         return self._entity_class
 
     @abc.abstractmethod
-    def find_by_id(self, id: str):
+    def find_by_id(self, identifier: str):
         """
         Retrieves an entity by its id.
-        :param id: The id.
-        :type id: str
+        :param identifier: The id.
+        :type identifier: str
         :return: An instance of the EntityClass type, or None if none found.
         :rtype: pythoneda.Entity
         """
@@ -73,7 +76,9 @@ class Repo(Port, abc.ABC):
         :return: The instances of the EntityClass matching given criteria, or an empty list if none found.
         :rtype: List[pythoneda.Entity]
         """
-        raise NotImplementedError("find_by_attribute() must be implemented by subclasses")
+        raise NotImplementedError(
+            "find_by_attribute() must be implemented by subclasses"
+        )
 
     @abc.abstractmethod
     def filter(self, dictionary: Dict):
@@ -105,11 +110,11 @@ class Repo(Port, abc.ABC):
         raise NotImplementedError("update() must be implemented by subclasses")
 
     @abc.abstractmethod
-    def delete(self, id: str):
+    def delete(self, identifier: str):
         """
         Deletes an existing Entity.
-        :param item: The entity.
-        :type item: pythoneda.Entity
+        :param identifier: The identifier of the entity.
+        :type identifier: str
         """
         raise NotImplementedError("delete() must be implemented by subclasses")
 

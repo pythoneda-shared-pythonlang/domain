@@ -50,4 +50,4 @@ class LoggingPort(Port):
         :return: Such instance.
         :rtype: logging.Logger
         """
-        return NotImplementedError("logger(str) should be implemented by subclasses")
+        return NotImplementedError("logger(category) should be implemented by subclasses")

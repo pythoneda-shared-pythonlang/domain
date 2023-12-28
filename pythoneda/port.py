@@ -18,10 +18,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from abc import ABC
+import abc
 
 
-class Port(ABC):
+class Port(abc.ABC):
     """
     Represents a primary or secondary port.
 
@@ -61,3 +61,13 @@ class Port(ABC):
         :rtype: bool
         """
         return cls._enabled
+
+    @classmethod
+    @abc.abstractmethod
+    def instantiate(cls):
+        """
+        Creates an instance.
+        :return: The new instance.
+        :rtype: pythoneda.Port
+        """
+        pass

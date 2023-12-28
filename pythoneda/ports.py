@@ -41,7 +41,7 @@ class Ports:
 
     _singleton = None
 
-    def __init__(self, mappings: Dict[Port, List[Port]]):
+    def __init__(self, mappings: Dict[Type[Port], List[Port]]):
         """
         Creates a new instance.
         :param mappings: The adapter mappings.
@@ -50,7 +50,7 @@ class Ports:
         self._mappings = mappings
 
     @classmethod
-    def initialize(cls, mappings: Dict[Port, List[Port]]):
+    def initialize(cls, mappings: Dict[Type[Port], List[Port]]):
         """
         Initializes the singleton.
         :param mappings: The adapter mappings.
@@ -79,7 +79,7 @@ class Ports:
         """
         Resolves given port.
         :param port: The Port to resolve.
-        :type port: Type[Port]
+        :type port: pythoneda.Port
         :return: The adapter.
         :rtype: pythoneda.Port
         """
@@ -89,22 +89,23 @@ class Ports:
             result = self._instantiate_adapter(adapters[0])
         return result
 
-    def _instantiate_adapter(self, adapterClass: Type[Port]) -> Port:
+    @staticmethod
+    def _instantiate_adapter(adapterClass: Port) -> Port:
         """
         Instantiates given adapter.
-        :param adapter: The adapter class.
-        :type adapter: Type[pythoneda.Port]
+        :param adapterClass: The adapter class.
+        :type adapterClass: pythoneda.Port
         :return: The adapter instance.
         :rtype: pythoneda.Port
         """
         return adapterClass.instantiate()
 
     @classmethod
-    def sort_by_priority(cls, otherClass: Type) -> int:
+    def sort_by_priority(cls, otherClass: Port) -> int:
         """
         Delegates the priority information to given primary port.
         :param otherClass: The primary port.
-        :type otherClass: Type
+        :type otherClass: pythoneda.Port
         :return: Such priority.
         :rtype: int
         """

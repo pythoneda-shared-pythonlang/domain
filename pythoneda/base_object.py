@@ -42,31 +42,30 @@ class BaseObject:
     _logging_port = None
 
     @classmethod
-    def snake_to_camel(cls, input: str) -> str:
+    def snake_to_camel(cls, inputText: str) -> str:
         """
         Converts a string in snake case to camel case.
-        :param input: The snake-case input to convert.
-        :type input: str
+        :param inputText: The snake-case input to convert.
+        :type inputText: str
         :return: The camel-case version of the input.
         :rtype: str
         """
-        components = input.split("_")
+        components = inputText.split("_")
         return "".join(x.title() for x in components)
 
     @classmethod
-    def camel_to_snake(cls, input: str) -> str:
+    def camel_to_snake(cls, inputText: str) -> str:
         """
         Converts a string in camel case, to snake case.
-        :param input: The camel-case input to convert.
-        :type input: str
+        :param inputText: The camel-case input to convert.
+        :type inputText: str
         :return: The snake-case version of the input.
         :rtype: str
         """
-        name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", input)
-        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", input).lower()
+        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", inputText).lower()
 
     @classmethod
-    def kebab_to_camel(self, txt: str) -> str:
+    def kebab_to_camel(cls, txt: str) -> str:
         """
         Transforms given kebab-case value to camel case.
         :param txt: The value.
@@ -93,33 +92,32 @@ class BaseObject:
         return result.lower()
 
     @classmethod
-    def simplify_class_name(cls, input: str) -> str:
+    def simplify_class_name(cls, inputText: str) -> str:
         """
         Simplifies given class name to remove the module if it's just a snake-case version of the actual class name.
-        :param input: The class name to simplify.
-        :type input: str
+        :param inputText: The class name to simplify.
+        :type inputText: str
         :return: The simplified class name, or the input if it doesn't need to be simplified.
         :rtype: str
         """
-        if "." not in input:
-            return input  # If there's no dot, it's not a fully qualified class name
+        result = inputText
+        if "." in inputText:
+            # If there's no dot, it's not a fully qualified class name
 
-        module_name, class_name = input.rsplit(".", 1)
+            module_name, class_name = inputText.rsplit(".", 1)
 
-        # Extract the last part of the module path (if it exists)
-        last_module_name = (
-            module_name.split(".")[-1] if "." in module_name else module_name
-        )
+            # Extract the last part of the module path (if it exists)
+            last_module_name = (module_name.split(".")[-1] if "." in module_name else module_name)
 
-        # Convert the last part of the module path to CamelCase
-        camel_case_last_module = cls.snake_to_camel(last_module_name)
+            # Convert the last part of the module path to CamelCase
+            camel_case_last_module = cls.snake_to_camel(last_module_name)
 
-        # Check if the class name is the CamelCase version of the last part of the module name
-        if class_name == camel_case_last_module:
-            # Remove the last part of the module name and append the class name
-            return ".".join(module_name.split(".")[:-1] + [class_name])
+            # Check if the class name is the CamelCase version of the last part of the module name
+            if class_name == camel_case_last_module:
+                # Remove the last part of the module name and append the class name
+                result = ".".join(module_name.split(".")[:-1] + [class_name])
 
-        return input
+        return result
 
     @classmethod
     def full_class_name(cls, target: Type = None) -> str:
@@ -184,11 +182,11 @@ class BaseObject:
         return result
 
     @classmethod
-    def sort_by_priority(cls, otherClass: Type) -> int:
+    def sort_by_priority(cls, otherClass) -> int:
         """
         Delegates the priority information to given primary port.
         :param otherClass: The primary port.
-        :type otherClass: Type
+        :type otherClass: pythoneda.Port
         :return: Such priority.
         :rtype: int
         """
@@ -244,15 +242,13 @@ class BaseObject:
         :return: Such instance.
         :rtype: pythoneda.BaseObject
         """
-        from pythoneda import Ports
-
         result = None
         if cls.has_default_constructor():
             result = cls()
         if (
             result is None
             and cls.has_class_method("instance")
-            and cls.method_exists_and_has_no_parameters("instance")
+            and cls.method_has_no_parameters("instance")
         ):
             result = cls.instance()
 

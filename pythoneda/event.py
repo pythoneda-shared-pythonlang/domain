@@ -18,8 +18,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda import internal_attribute, ValueObject
+from . import internal_attribute, ValueObject
 from typing import List
+
 
 class Event(ValueObject):
     """
@@ -35,14 +36,21 @@ class Event(ValueObject):
         - EventEmitter: Emits Events.
         - EventListener: Listens to Events.
     """
-    def __init__(self, previousEventIds:List[str]=None, reconstructedId:str=None, reconstructedPreviousEventIds:List[str]=None):
+
+    def __init__(
+        self,
+        previousEventIds: List[str] = None,
+        reconstructedId: str = None,
+        reconstructedPreviousEventIds: List[str] = None,
+    ):
         """
         Creates a new Event instance.
         :param previousEventIds: The id of previous events, if any.
         :type previousEventIds: List[str]
         :param reconstructedId: An optional id (in case it's a reconstruction of an external event).
         :type reconstructedId: str
-        :param reconstructedPreviousEventIds: The id of the events this one is response to, in case it's a reconstruction of an external event.
+        :param reconstructedPreviousEventIds: The id of the events this one is response to,
+        in case it's a reconstruction of an external event.
         :type reconstructedPreviousEventIds: str
         """
         super().__init__()
@@ -64,4 +72,4 @@ class Event(ValueObject):
         if hasattr(self, "_previous_event_ids"):
             return self._previous_event_ids
         else:
-            return None
+            return []

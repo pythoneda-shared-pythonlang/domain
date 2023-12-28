@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import gettext
 from pythoneda import DomainException
 
-_ = gettext.gettext
 
 class UnsupportedEvent(DomainException):
     """
@@ -35,10 +34,11 @@ class UnsupportedEvent(DomainException):
     Collaborators:
         - PrimaryPort: Ports that accept events and detect unsupported ones.
     """
+
     def __init__(self, event: str):
         """
         Creates a new instance.
         :param event: The unsupported event.
         :type event: str
         """
-        super().__init__(f_('Unsupported event: {event}'))
+        super().__init__(f"Unsupported event: {event}")

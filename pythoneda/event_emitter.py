@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import abc
 from pythoneda import BaseObject, Event, Port
 
+
 class EventEmitter(BaseObject, Port, abc.ABC):
     """
     Port able to emit Events.
@@ -49,7 +50,7 @@ class EventEmitter(BaseObject, Port, abc.ABC):
         """
         Registers a new listener.
         :param receiver: The event receiver to register.
-        :type receiver: EventListener
+        :type receiver: pythoneda.EventListener
         """
         if receiver not in EventEmitter._receivers:
             EventEmitter._receivers.append(receiver)
@@ -57,9 +58,9 @@ class EventEmitter(BaseObject, Port, abc.ABC):
     @classmethod
     def unregister_receiver(cls, receiver):
         """
-        Unlists a receiver.
-        :param receiver: The event listener to unlist.
-        :type receiver: EventListener
+        Unregisters a receiver.
+        :param receiver: The event listener to unregister.
+        :type receiver: pythoneda.EventListener
         """
         if receiver in EventEmitter._receivers:
             EventEmitter._receivers.remove(receiver)
@@ -68,7 +69,7 @@ class EventEmitter(BaseObject, Port, abc.ABC):
         """
         Emits given event.
         :param event: The event to emit.
-        :type event: Event
+        :type event: pythoneda.Event
         """
         for receiver in EventEmitter._receivers:
             await receiver.accept(event)

@@ -40,7 +40,7 @@ class DomainException(Exception, ValueObject):
 
     locale_dir = ".i18n"
 
-    def __init__(self, txt: str, *args):
+    def __init__(self, txt: str, *args: Any):
         """
         Creates a new DomainException instance.
         :param txt: The exception message.

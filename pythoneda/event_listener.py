@@ -18,13 +18,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from .ports import Ports
 import abc
 import functools
 import inspect
-import logging
-from pythoneda import BaseObject, Event, UnsupportedEvent
 from typing import Any, Callable, Dict, List, Type
+
+from pythoneda import BaseObject, Event
 
 _event_listeners = {}
 _event_listeners_by_event_class = {}
@@ -96,8 +95,8 @@ def _classes_by_key(key):
 def _add_to_pending(func: Callable, eventClass: Type[Any], store: Dict):
     """
     Adds given function (specifically a derived value) in a list.
-    :param value: The value to annotate.
-    :type value: Callable
+    :param func: The function to add.
+    :type func: Callable
     :param eventClass: The class of the event.
     :type eventClass: pythoneda.Event
     :param store: The dictionary to store the function.
@@ -171,7 +170,8 @@ def _process_pending_event_listeners(cls: Type[Any]):
 
     for name, listener in vars(cls).items():
         if _is_listen_method(listener):
-            # First, @classmethod. Then, @listen. That's why we are passing `listener.__func__, which is our @listen function`
+            # First, @classmethod. Then, @listen.
+            # That's why we are passing `listener.__func__, which is our @listen function`
             _process_pending_event_listener(
                 cls,
                 listener,
@@ -183,7 +183,8 @@ def _process_pending_event_listeners(cls: Type[Any]):
     for current_parent in cls.mro():
         for name, listener in vars(current_parent).items():
             if _is_listen_method(listener):
-                # First, @classmethod. Then, @listen. That's why we are passing `listener.__func__, which is our @listen function`
+                # First, @classmethod. Then, @listen.
+                # That's why we are passing `listener.__func__, which is our @listen function`
                 _process_pending_event_listener(
                     cls,
                     listener,
@@ -257,7 +258,7 @@ def _propagate_event_listeners_upwards(cls):
         parent_cls_key = _build_cls_key(current_parent)
         if parent_cls_key in _event_listeners.keys():
             for event_listener in _event_listeners[parent_cls_key]:
-                if not event_listener in _event_listeners[cls_key]:
+                if event_listener not in _event_listeners[cls_key]:
                     _event_listeners[cls_key].append(event_listener)
 
 
@@ -341,7 +342,7 @@ class EventListener(BaseObject, abc.ABC):
         """
         result = -1
         if cls.has_default_priority_method(primaryPort):
-            result = result = primaryPort.default_priority()
+            result = primaryPort.default_priority()
 
         if cls.has_priority_method(primaryPort):
             instance = cls.get_primary_port_instance(primaryPort)
@@ -418,8 +419,6 @@ class EventListener(BaseObject, abc.ABC):
         _propagate_event_listeners_upwards(cls)
         from .event_listener import (
             _pending_event_listeners,
-            _event_listeners,
-            _event_listener_methods,
         )
 
         del _pending_event_listeners

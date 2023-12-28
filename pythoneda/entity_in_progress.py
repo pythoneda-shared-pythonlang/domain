@@ -18,7 +18,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda import attribute, primary_key_attribute, ValueObject
+from pythoneda import ValueObject
+
 
 class EntityInProgress(ValueObject):
 

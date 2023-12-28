@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .base_object import BaseObject
 
+
 class Formatting(BaseObject):
     """
     Marks formatting wrappers.
@@ -31,9 +32,11 @@ class Formatting(BaseObject):
         - Exposes only other instance's data, not behavior.
 
     Collaborators:
-        - PythonEDA/ValueObject: It uses this class to determine the behavior of its "__eq__()", "__str__()", "__repr__()" and "__hash__()".
+        - PythonEDA/ValueObject: It uses this class to determine the behavior
+          of its "__eq__()", "__str__()", "__repr__()" and "__hash__()".
 
     """
+
     def __init__(self, fmt):
         """
         Creates a new instance.

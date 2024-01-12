@@ -23,6 +23,7 @@ import os
 from pathlib import Path
 from pythoneda import ValueObject
 
+
 class DomainException(Exception, ValueObject):
     """
     The parent class of all domain exceptions.
@@ -40,7 +41,7 @@ class DomainException(Exception, ValueObject):
 
     locale_dir = ".i18n"
 
-    def __init__(self, txt: str, *args: Any):
+    def __init__(self, txt: str, *args):
         """
         Creates a new DomainException instance.
         :param txt: The exception message.
@@ -66,8 +67,15 @@ class DomainException(Exception, ValueObject):
         :return: The message according to the locale.
         :rtype: str
         """
-        localedir = os.path.join(Path(__file__).resolve().parent.parent, self.__class__.locale_dir, "locale")
-        t = gettext.translation("pythoneda", localedir=self.__class__.locale_dir, languages=[locale], fallback=True)
+        localedir = os.path.join(
+            Path(__file__).resolve().parent.parent, self.__class__.locale_dir, "locale"
+        )
+        t = gettext.translation(
+            "pythoneda",
+            localedir=self.__class__.locale_dir,
+            languages=[locale],
+            fallback=True,
+        )
         _ = t.gettext
 
         return _(self.message)

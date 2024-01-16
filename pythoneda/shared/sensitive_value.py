@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/sensitive_value.py
+pythoneda/shared/sensitive_value.py
 
 This file defines the SensitiveValue class.
 
@@ -18,7 +19,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda import BaseObject
+from .base_object import BaseObject
 
 
 class SensitiveValue(BaseObject):

@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/ports.py
+pythoneda/shared/ports.py
 
 This script defines the Ports class.
 

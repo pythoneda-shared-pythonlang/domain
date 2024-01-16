@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/base_object.py
+pythoneda/shared/base_object.py
 
 This script defines the BaseObject class.
 
@@ -20,8 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .logging_port import LoggingPort
 from .logging_port_fallback import LoggingPortFallback
-import inspect
 from .ports import Ports
+import inspect
 import re
 from typing import Type
 
@@ -107,7 +108,9 @@ class BaseObject:
             module_name, class_name = inputText.rsplit(".", 1)
 
             # Extract the last part of the module path (if it exists)
-            last_module_name = (module_name.split(".")[-1] if "." in module_name else module_name)
+            last_module_name = (
+                module_name.split(".")[-1] if "." in module_name else module_name
+            )
 
             # Convert the last part of the module path to CamelCase
             camel_case_last_module = cls.snake_to_camel(last_module_name)

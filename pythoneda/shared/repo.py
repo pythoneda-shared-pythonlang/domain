@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/repo.py
+pythoneda/shared/repo.py
 
 This script defines the Repo class.
 
@@ -18,8 +19,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from .port import Port
 import abc
-from pythoneda import Port
 from typing import Dict, List
 
 

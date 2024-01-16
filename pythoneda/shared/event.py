@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/event.py
+pythoneda/shared/event.py
 
 This file defines the Event class.
 

@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/entity_in_progress.py
+pythoneda/shared/entity_in_progress.py
 
 This script defines the EntityInProgress class.
 
@@ -18,7 +19,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda import ValueObject
+from .value_object import ValueObject
 
 
 class EntityInProgress(ValueObject):

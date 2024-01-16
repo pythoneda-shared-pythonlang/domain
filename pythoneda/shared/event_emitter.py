@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/event_emitter.py
+pythoneda/shared/event_emitter.py
 
 This script defines the EventEmitter class.
 
@@ -18,8 +19,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from . import BaseObject, Event, Port
 import abc
-from pythoneda import BaseObject, Event, Port
 
 
 class EventEmitter(BaseObject, Port, abc.ABC):
@@ -34,6 +35,7 @@ class EventEmitter(BaseObject, Port, abc.ABC):
     Collaborators:
         - Event: The events being emitted.
     """
+
     _receivers = []
 
     @classmethod

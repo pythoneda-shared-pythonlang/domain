@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/formatting.py
+pythoneda/shared/formatting.py
 
 This file defines the Formatting class.
 

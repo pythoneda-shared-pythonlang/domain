@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/logging_port_fallback.py
+pythoneda/shared/logging_port_fallback.py
 
 This script defines the LoggingPortFallback class.
 

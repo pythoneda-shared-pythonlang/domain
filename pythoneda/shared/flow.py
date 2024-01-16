@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/flow.py
+pythoneda/shared/flow.py
 
 This script defines the Flow class.
 
@@ -18,10 +19,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda import Event, ValueObject
+from . import Entity, Event
+from typing import List
 
 
-class Flow(ValueObject):
+class Flow(Entity):
     """
     Represents a Flow: a sequence of events.
 
@@ -41,6 +43,8 @@ class Flow(ValueObject):
         :type firstEvent: pythoneda.Event
         """
         super().__init__()
+        self._events = []
+        self._add_event(firstEvent)
         self._first_event = firstEvent
 
     @property
@@ -51,3 +55,20 @@ class Flow(ValueObject):
         :rtype: pythoneda.Event
         """
         return self._first_event
+
+    @property
+    def events(self) -> List[Event]:
+        """
+        Retrieves the list of events of the flow.
+        :return: Such list.
+        :rtype: List[pythoneda.Event]
+        """
+        return self._events
+
+    def _add_event(self, event: Event):
+        """
+        Adds a new event to the flow.
+        :param event: The event.
+        :type event: pythoneda.Event
+        """
+        self._events.append(event)

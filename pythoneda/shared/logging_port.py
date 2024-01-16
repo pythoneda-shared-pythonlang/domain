@@ -1,7 +1,8 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/unsupported_event.py
+pythoneda/shared/logging_port.py
 
-This script defines the UnsupportedEvent class.
+This script defines the LoggingPort class.
 
 Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/domain
 
@@ -18,27 +19,38 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import gettext
-from pythoneda import DomainException
+from .port import Port
+from abc import abstractmethod
 
 
-class UnsupportedEvent(DomainException):
+class LoggingPort(Port):
     """
-    An unsupported event was emitted.
+    Port for logging mechanisms.
 
-    Class name: UnsupportedEvent
+    Class name: LoggingPort
 
     Responsibilities:
-        - Contain context information about the event that was received and was not supported.
+        - Provide logging mechanisms.
 
     Collaborators:
-        - PrimaryPort: Ports that accept events and detect unsupported ones.
+        - None
     """
 
-    def __init__(self, event: str):
+    def __init__(self):
         """
-        Creates a new instance.
-        :param event: The unsupported event.
-        :type event: str
+        Initializes a new LoggingPort instance.
         """
-        super().__init__(f"Unsupported event: {event}")
+        super().__init__()
+
+    @abstractmethod
+    def logger(self, category: str = None):
+        """
+        Retrieves the logger instance.
+        :param category: The logging category.
+        :type category: str
+        :return: Such instance.
+        :rtype: logging.Logger
+        """
+        return NotImplementedError(
+            "logger(category) should be implemented by subclasses"
+        )

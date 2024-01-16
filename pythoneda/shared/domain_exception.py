@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/domain_exception.py
+pythoneda/shared/domain_exception.py
 
 This file defines the DomainException class.
 
@@ -18,10 +19,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from .value_object import ValueObject
 import gettext
 import os
 from pathlib import Path
-from pythoneda import ValueObject
 
 
 class DomainException(Exception, ValueObject):

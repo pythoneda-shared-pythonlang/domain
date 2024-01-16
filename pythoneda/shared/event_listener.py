@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/event_listener.py
+pythoneda/shared/event_listener.py
 
 This script defines the EventListener class and the @listen decorator.
 
@@ -18,12 +19,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from . import BaseObject, Event
 import abc
 import functools
 import inspect
 from typing import Any, Callable, Dict, List, Type
 
-from pythoneda import BaseObject, Event
 
 _event_listeners = {}
 _event_listeners_by_event_class = {}

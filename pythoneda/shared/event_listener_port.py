@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/event_listener_port.py
+pythoneda/shared/event_listener_port.py
 
 This script defines the EventListenerPort class.
 
@@ -18,8 +19,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from . import BaseObject, Event, EventListener, PrimaryPort
 import abc
-from pythoneda import BaseObject, Event, EventListener, PrimaryPort
 from typing import Type
 
 

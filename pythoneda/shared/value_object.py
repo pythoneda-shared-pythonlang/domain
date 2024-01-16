@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/value_object.py
+pythoneda/shared/value_object.py
 
 This script contains the ValueObject class and some decorators.
 
@@ -18,6 +19,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from . import BaseObject, Formatting, SensitiveValue
 import functools
 import importlib
 import inspect
@@ -26,7 +28,6 @@ import uuid
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Union
 
-from pythoneda import BaseObject, Formatting, SensitiveValue
 
 _primary_key_properties = {}
 _pending_primary_key_properties = []
@@ -568,8 +569,10 @@ class ValueObject(BaseObject):
                 name, value = self._property_to_tuple(prop)
                 if value:
                     internal_properties[name] = value
-        internal = {"properties": internal_properties,
-                    "class": f"{self.__class__.__module__}.{self.__class__.__name__}"}
+        internal = {
+            "properties": internal_properties,
+            "class": f"{self.__class__.__module__}.{self.__class__.__name__}",
+        }
         result["_internal"] = internal
         if key in _properties.keys():
             for prop in _properties[key]:

@@ -47,3 +47,11 @@ from .primary_port import PrimaryPort
 from .event_listener_port import EventListenerPort
 from .repo import Repo
 from .flow import Flow
+# vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
+# Local Variables:
+# mode: python
+# python-indent-offset: 4
+# tab-width: 4
+# indent-tabs-mode: nil
+# fill-column: 79
+# End:

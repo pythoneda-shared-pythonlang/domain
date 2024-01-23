@@ -250,7 +250,7 @@ def _propagate_event_listeners_upwards(cls):
     :param cls: The class holding the listeners.
     :type cls: type
     """
-    from pythoneda.event_listener import _event_listeners
+    from pythoneda.shared.event_listener import _event_listeners
 
     cls_key = _build_cls_key(cls)
     if cls_key not in _event_listeners.keys():
@@ -423,6 +423,8 @@ class EventListener(BaseObject, abc.ABC):
         )
 
         del _pending_event_listeners
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

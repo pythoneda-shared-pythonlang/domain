@@ -50,7 +50,7 @@ class PrimaryPort(Port, abc.ABC):
         :type app: pythoneda.application.PythonEDA
         """
         raise NotImplementedError(
-            "entrypoint(app:pythoneda.application.PythonEDA) must be implemented by subclasses"
+            "entrypoint(app:pythoneda.shared.application.PythonEDA) must be implemented by subclasses"
         )
 
     @classmethod
@@ -74,6 +74,8 @@ class PrimaryPort(Port, abc.ABC):
         :rtype: int
         """
         return 100
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

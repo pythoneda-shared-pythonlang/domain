@@ -250,7 +250,7 @@ def _propagate_event_listeners_upwards(cls):
     :param cls: The class holding the listeners.
     :type cls: type
     """
-    from pythoneda.shared.event_listener import _event_listeners
+    from .event_listener import _event_listeners
 
     cls_key = _build_cls_key(cls)
     if cls_key not in _event_listeners.keys():
@@ -286,7 +286,7 @@ class EventListener(BaseObject, abc.ABC):
         :return: Such mapping.
         :rtype: Dict
         """
-        from pythoneda.event_listener import _event_listeners
+        from .event_listener import _event_listeners
 
         return _event_listeners
 
@@ -297,7 +297,7 @@ class EventListener(BaseObject, abc.ABC):
         :return: Such mapping.
         :rtype: Dict
         """
-        from pythoneda.event_listener import _event_listeners_by_event_class
+        from .event_listener import _event_listeners_by_event_class
 
         return _event_listeners_by_event_class
 
@@ -308,7 +308,7 @@ class EventListener(BaseObject, abc.ABC):
         :return: Such mapping.
         :rtype: Dict
         """
-        from pythoneda.event_listener import _event_listener_methods
+        from .event_listener import _event_listener_methods
 
         return _event_listener_methods
 

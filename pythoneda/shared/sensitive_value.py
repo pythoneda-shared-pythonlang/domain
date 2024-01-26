@@ -43,7 +43,10 @@ class SensitiveValue(BaseObject):
         :param value: The value to protect.
         :type value: str
         """
-        self._value = value
+        if isinstance(value, SensitiveValue):
+            self._value = value.get()
+        else:
+            self._value = value
 
     def get(self):
         """
@@ -96,6 +99,8 @@ class SensitiveValue(BaseObject):
         :rtype: int
         """
         return self._value.__hash__()
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

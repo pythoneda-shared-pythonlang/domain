@@ -93,6 +93,28 @@ class BaseObject:
         return result.lower()
 
     @classmethod
+    def kebab_to_snake(cls, txt: str) -> str:
+        """
+        Transforms given kebab-case value to snake case.
+        :param txt: The value.
+        :type txt: str
+        :return: The value formatted in snake case.
+        :rtype: str
+        """
+        return cls.camel_to_snake(cls.kebab_to_camel(txt))
+
+    @classmethod
+    def snake_to_kebab(cls, txt: str) -> str:
+        """
+        Transforms given snake-case value to kebab case.
+        :param txt: The value.
+        :type txt: str
+        :return: The value formatted in kebab case.
+        :rtype: str
+        """
+        return cls.camel_to_kebab(cls.snake_to_camel(txt))
+
+    @classmethod
     def simplify_class_name(cls, inputText: str) -> str:
         """
         Simplifies given class name to remove the module if it's just a snake-case version of the actual class name.
@@ -256,6 +278,8 @@ class BaseObject:
             result = cls.instance()
 
         return result
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

@@ -170,7 +170,7 @@ class BaseObject:
         if cls._logging_port is None:
             ports = Ports.instance()
             if ports is not None:
-                cls._logging_port = ports.resolve(LoggingPort)
+                cls._logging_port = ports.resolve_first(LoggingPort)
         if cls._logging_port is None:
             cls._logging_port = LoggingPortFallback()
 

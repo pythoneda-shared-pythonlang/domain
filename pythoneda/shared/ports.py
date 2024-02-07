@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .port import Port
 import importlib
+import inspect
 from typing import Dict, List, Type
 
 
@@ -76,18 +77,38 @@ class Ports:
             result = cls({})
         return result
 
-    def resolve(self, port: Type[Port]) -> Port:
+    def resolve(self, port: Type[Port]) -> List[Port]:
         """
         Resolves given port.
         :param port: The Port to resolve.
-        :type port: pythoneda.Port
+        :type port: Type[pythoneda.Port]
+        :return: The adapters.
+        :rtype: List[pythoneda.Port]
+        """
+        result = []
+        adapter_classes_or_instances = self.resolve_all(port)
+        for adapter_class_or_instance in adapter_classes_or_instances:
+            if inspect.isclass(adapter_class_or_instance):
+                adapter_class = adapter_class_or_instance
+                result.append(self._instantiate_adapter(adapter_class))
+            else:
+                result.append(adapter_class_or_instance)
+
+        return result
+
+    def resolve_first(self, port: Type[Port]) -> Port:
+        """
+        Resolves given port to the first adapter found.
+        :param port: The Port to resolve.
+        :type port: Type[pythoneda.Port]
         :return: The adapter.
         :rtype: pythoneda.Port
         """
         result = None
-        adapters = self.resolve_all(port)
+        adapters = self.resolve(port)
         if len(adapters) > 0:
-            result = self._instantiate_adapter(adapters[0])
+            result = adapters[0]
+
         return result
 
     @staticmethod
@@ -145,6 +166,8 @@ class Ports:
         module = importlib.import_module(moduleName)
         port = getattr(module, portName)
         return self.resolve(port)
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

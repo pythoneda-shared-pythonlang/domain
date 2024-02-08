@@ -4,7 +4,7 @@ pythoneda/shared/event_emitter.py
 
 This script defines the EventEmitter class.
 
-Copyright (C) 2023-today rydnr's pythoneda-shared/domain
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/domain
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -75,6 +75,8 @@ class EventEmitter(BaseObject, Port, abc.ABC):
         """
         for receiver in EventEmitter._receivers:
             await receiver.accept(event)
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

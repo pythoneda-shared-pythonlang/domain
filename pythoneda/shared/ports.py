@@ -4,7 +4,7 @@ pythoneda/shared/ports.py
 
 This script defines the Ports class.
 
-Copyright (C) 2023-today rydnr's pythoneda-shared/domain
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/domain
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -474,17 +474,29 @@ class ValueObject(BaseObject):
             result = prop.fget.__name__
         return result
 
-    def _function_takes_no_arguments(self, f: Callable) -> bool:
+    def _method_takes_no_arguments(self, f: Callable) -> bool:
         """
-        Checks if given function or method takes no arguments.
-        :param f: The function or method to check.
+        Checks if given method takes no arguments.
+        :param f: The method to check.
         :type f: Callable
-        :return: True if the function or method can be called without any argument.
+        :return: True if the method can be called without any argument.
         :rtype: bool
         """
-        sig = inspect.signature(func)
+        sig = inspect.signature(f)
         params = sig.parameters.values()
-        return all(param.name == "self" for param in params) or len(params) == 0
+        return all(param.name == "self" for param in params)
+
+    def _function_takes_no_arguments(self, f: Callable) -> bool:
+        """
+        Checks if given function takes no arguments.
+        :param f: The function to check.
+        :type f: Callable
+        :return: True if the function can be called without any argument.
+        :rtype: bool
+        """
+        sig = inspect.signature(f)
+        params = sig.parameters.values()
+        return len(params) == 0
 
     def _value_to_json(self, value: Any, includeNulls: bool = False) -> str:
         """
@@ -498,10 +510,10 @@ class ValueObject(BaseObject):
         """
         result = None
         if callable(value):
-            if (
-                inspect.ismethod(value) or inspect.isfunction()
-            ) and self._function_takes_no_arguments(value):
-                value = value(self)
+            if inspect.isfunction(value) and self._function_takes_no_arguments(value):
+                value = value()
+            elif inspect.ismethod(value) and self._method_takes_no_arguments(value):
+                value = value()
             elif isinstance(value, property):
                 value = self._property_to_json(value, includeNulls)
         if value:

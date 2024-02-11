@@ -75,6 +75,14 @@ class Event(ValueObject):
         else:
             return []
 
+    async def maybe_trigger(self) -> List:
+        """
+        Triggers new events.
+        :return: The triggered events.
+        :rtype: List[pythoneda.shared.Event]
+        """
+        return []
+
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:

@@ -474,6 +474,18 @@ class ValueObject(BaseObject):
             result = prop.fget.__name__
         return result
 
+    def _function_takes_no_arguments(self, f: Callable) -> bool:
+        """
+        Checks if given function or method takes no arguments.
+        :param f: The function or method to check.
+        :type f: Callable
+        :return: True if the function or method can be called without any argument.
+        :rtype: bool
+        """
+        sig = inspect.signature(func)
+        params = sig.parameters.values()
+        return all(param.name == "self" for param in params) or len(params) == 0
+
     def _value_to_json(self, value: Any, includeNulls: bool = False) -> str:
         """
         Builds a json-compatible representation of given value.
@@ -486,10 +498,12 @@ class ValueObject(BaseObject):
         """
         result = None
         if callable(value):
-            if inspect.ismethod(value):
+            if (
+                inspect.ismethod(value) or inspect.isfunction()
+            ) and self._function_takes_no_arguments(value):
                 value = value(self)
-            else:
-                value = value.fget(self)
+            elif isinstance(value, property):
+                value = self._property_to_json(value, includeNulls)
         if value:
             if type(value) is list or type(value) is dict:
                 items = list(map(lambda x: self._value_to_json(x, includeNulls), value))
@@ -497,9 +511,9 @@ class ValueObject(BaseObject):
             elif self._is_json_compatible(value):
                 result = f"j{value.to_json()}"
             elif type(value) is str:
-                result = value
+                result = f'"{value}"'
             elif type(value) is datetime:
-                result = str(value)
+                result = f'"{str(value)}"'
             else:
                 result = json.dumps(str(value))
         elif includeNulls:

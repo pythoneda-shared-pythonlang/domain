@@ -159,6 +159,17 @@ class BaseObject:
         return f"{actual_target.__module__}.{actual_target.__name__}"
 
     @classmethod
+    def class_name(cls, target: Type = None) -> str:
+        """
+        Retrieves the class name of given class.
+        :param target: The class. If omitted, this very class.
+        :type target: Class
+        :return: The key.
+        :rtype: str
+        """
+        return cls.full_class_name(target).split(".")[-1]
+
+    @classmethod
     def logger(cls, category: str = None):
         """
         Retrieves the logger instance.

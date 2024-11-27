@@ -93,7 +93,7 @@ def _add_wrapper(func):
     :param func: The wrapper.
     :type func: callable
     """
-    from pythoneda.shared.value_object import _pending_properties
+    from .value_object import _pending_properties
 
     _add_to_pending(func, _pending_properties, "properties")
 
@@ -141,7 +141,7 @@ def primary_key_attribute(func):
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
 
-    from pythoneda.shared.value_object import _pending_primary_key_properties
+    from .value_object import _pending_primary_key_properties
 
     _add_to_pending(wrapper, _pending_primary_key_properties, "primary_key_properties")
     _add_wrapper(wrapper)
@@ -160,7 +160,7 @@ def filter_attribute(func):
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
 
-    from pythoneda.value_object import _pending_filter_properties
+    from pythoneda.shared.value_object import _pending_filter_properties
 
     _add_to_pending(wrapper, _pending_filter_properties, "filter_properties")
     _add_wrapper(wrapper)
@@ -179,7 +179,7 @@ def internal_attribute(func):
     def wrapper(self, *args, **kwargs):
         return func(self, *args, **kwargs)
 
-    from pythoneda.shared.value_object import _pending_internal_properties
+    from .value_object import _pending_internal_properties
 
     _add_to_pending(wrapper, _pending_internal_properties, "internal_properties")
     return wrapper
@@ -193,7 +193,7 @@ def _process_pending_properties(cls: type, delete: bool = False):
     :param delete: Whether to clean up pending properties at the end or not.
     :type delete: bool
     """
-    from pythoneda.shared.value_object import (
+    from .value_object import (
         _properties,
         _pending_properties,
         _primary_key_properties,
@@ -262,7 +262,7 @@ def _propagate_properties(cls):
     :param cls: The class holding the properties.
     :type cls: type
     """
-    from pythoneda.shared.value_object import (
+    from .value_object import (
         _properties,
         _primary_key_properties,
         _filter_properties,
@@ -319,7 +319,7 @@ class ValueObject(BaseObject):
         """
         result = []
         key = _build_cls_key(cls)
-        from pythoneda.shared.value_object import _primary_key_properties
+        from .value_object import _primary_key_properties
 
         if key in _primary_key_properties.keys():
             result = list(map(lambda p: p.fget.__name__, _primary_key_properties[key]))
@@ -345,7 +345,7 @@ class ValueObject(BaseObject):
         :return: The class attributes.
         :rtype: List
         """
-        from pythoneda.shared.value_object import _properties, _internal_properties
+        from .value_object import _properties, _internal_properties
 
         result = []
         key = _build_cls_key(cls)

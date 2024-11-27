@@ -38,7 +38,7 @@ class Port(abc.ABC):
         - Ports maintain a registry of Port instances.
     """
 
-    _enabled = False
+    _enabled = True
 
     def __init__(self):
         """
@@ -69,7 +69,7 @@ class Port(abc.ABC):
         """
         Creates an instance.
         :return: The new instance.
-        :rtype: pythoneda.Port
+        :rtype: pythoneda.shared.Port
         """
         pass
 

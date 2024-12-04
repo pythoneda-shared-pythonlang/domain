@@ -20,10 +20,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from . import Entity, Event
+import abc
 from typing import List
 
 
-class Flow(Entity):
+class Flow(Entity, abc.ABC):
     """
     Represents a Flow: a sequence of events.
 
@@ -36,16 +37,16 @@ class Flow(Entity):
         - Event
     """
 
-    def __init__(self, firstEvent: Event):
+    def __init__(self, firstEvent: Event = None):
         """
         Creates a new Flow instance.
         :param firstEvent: The first event of the flow.
-        :type firstEvent: pythoneda.Event
+        :type firstEvent: pythoneda.shared.Event
         """
         super().__init__()
+        self._first_event = None
         self._events = []
         self._add_event(firstEvent)
-        self._first_event = firstEvent
 
     @property
     def first_event(self) -> Event:
@@ -61,7 +62,7 @@ class Flow(Entity):
         """
         Retrieves the list of events of the flow.
         :return: Such list.
-        :rtype: List[pythoneda.Event]
+        :rtype: List[pythoneda.shared.Event]
         """
         return self._events
 
@@ -69,9 +70,35 @@ class Flow(Entity):
         """
         Adds a new event to the flow.
         :param event: The event.
-        :type event: pythoneda.Event
+        :type event: pythoneda.shared.Event
         """
-        self._events.append(event)
+        if event is not None:
+            if self._first_event is None:
+                self._first_event = event
+            self._events.append(event)
+
+    async def resume(self, event: Event):
+        """
+        Resumes the flow with a new event.
+        :param event: The event.
+        :type event: pythoneda.shared.Event
+        """
+        if len(event.previous_event_ids) > 0:
+            previous_event = event.previous_event_ids[:-1]
+            my_previous_event = self._events[-1]
+            if previous_event == my_previous_event.id:
+                await self.accept(event, my_previous_event)
+
+    @abc.abstractmethod
+    async def accept(self, event: Event, previous_event: Event):
+        """
+        Accepts a new event.
+        :param event: The event.
+        :type event: pythoneda.shared.Event
+        :param previous_event: The previous event.
+        :type previous_event: pythoneda.shared.Event
+        """
+        pass
 
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et

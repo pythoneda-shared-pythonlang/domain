@@ -83,6 +83,15 @@ class Event(ValueObject):
         """
         return []
 
+    @property
+    def is_error(self):
+        """
+        Checks if the event is an error.
+        :return: True if it's an error, False otherwise.
+        :rtype: bool
+        """
+        return False
+
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:

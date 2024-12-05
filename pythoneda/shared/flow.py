@@ -46,7 +46,7 @@ class Flow(Entity, abc.ABC):
         super().__init__()
         self._first_event = None
         self._events = []
-        self._add_event(firstEvent)
+        self.add_event(firstEvent)
 
     @property
     def first_event(self) -> Event:
@@ -66,7 +66,7 @@ class Flow(Entity, abc.ABC):
         """
         return self._events
 
-    def _add_event(self, event: Event):
+    def add_event(self, event: Event):
         """
         Adds a new event to the flow.
         :param event: The event.
@@ -84,19 +84,37 @@ class Flow(Entity, abc.ABC):
         :type event: pythoneda.shared.Event
         """
         if len(event.previous_event_ids) > 0:
-            previous_event = event.previous_event_ids[:-1]
-            my_previous_event = self._events[-1]
-            if previous_event == my_previous_event.id:
-                await self.accept(event, my_previous_event)
+            event_previous_events = event.previous_event_ids
+            if type(event_previous_events) is str:
+                previous_event_id = event_previous_events
+            else:
+                previous_event_id = event_previous_events[-1]
+
+            my_previous_event_id = self._events[-1].id
+            if previous_event_id == my_previous_event_id:
+                await self.continue_flow(event, self._events[-1])
+
+    def find_latest_event(self, eventClass: type) -> Event:
+        """
+        Finds the latest event of the given class.
+        :param eventClass: The class of the event.
+        :type eventClass: type
+        :return: Such event.
+        :rtype: pythoneda.shared.Event
+        """
+        for event in reversed(self._events):
+            if isinstance(event, eventClass):
+                return event
+        return None
 
     @abc.abstractmethod
-    async def accept(self, event: Event, previous_event: Event):
+    async def continue_flow(self, event: Event, previousEvent: Event):
         """
-        Accepts a new event.
+        Continues the flow with a new event.
         :param event: The event.
         :type event: pythoneda.shared.Event
-        :param previous_event: The previous event.
-        :type previous_event: pythoneda.shared.Event
+        :param previousEvent: The previous event.
+        :type previousEvent: pythoneda.shared.Event
         """
         pass
 

@@ -440,7 +440,7 @@ class ValueObject(BaseObject):
         if hasattr(prop, "fget"):
             value = self._value_to_json(prop.fget(self), includeNulls)
             if value:
-                result = f'"{prop.fget.__name__}": {value}'
+                result = f'"{prop.fget.__name__}": {json.dumps(value)}'
         return result
 
     def _property_to_tuple(self, prop: property, includeNulls: bool = False) -> tuple:
@@ -508,7 +508,47 @@ class ValueObject(BaseObject):
         :return: A json representation of given value.
         :rtype: str
         """
-        result = None
+        # Handle null values
+        if value is None:
+            # If includeNulls is False, you might decide not to include the property at all.
+            # If you do include it, just return None. json.dumps() will convert None to null.
+            return None
+
+        # Handle booleans
+        if isinstance(value, bool):
+            return value  # json.dumps() will convert True/False -> true/false
+
+        # Handle integers and floats
+        if isinstance(value, (int, float)):
+            return value  # json.dumps() converts these correctly
+
+        # Handle strings
+        if isinstance(value, str):
+            return value  # No need to encode now, json.dumps() will add quotes.
+
+        # Handle datetime
+        if isinstance(value, datetime):
+            # Convert datetime objects to an ISO string before json.dumps()
+            return value.isoformat()
+
+        # For lists
+        if isinstance(value, list):
+            # Recursively convert each element
+            return [
+                self._value_to_json(x, includeNulls)
+                for x in value
+                if includeNulls or x is not None
+            ]
+
+        # For dictionaries
+        if isinstance(value, dict):
+            # Recursively convert each value
+            return {
+                k: self._value_to_json(v, includeNulls)
+                for k, v in value.items()
+                if includeNulls or v is not None
+            }
+
         if callable(value):
             if inspect.isfunction(value) and self._function_takes_no_arguments(value):
                 value = value()
@@ -516,41 +556,9 @@ class ValueObject(BaseObject):
                 value = value()
             elif isinstance(value, property):
                 value = self._property_to_json(value, includeNulls)
-        if value:
-            if type(value) is list or type(value) is dict:
-                items = list(map(lambda x: self._value_to_json(x, includeNulls), value))
-                result = json.dumps(items)
-            elif self._is_json_compatible(value):
-                result = f"j{value.to_json()}"
-            elif type(value) is str:
-                result = f'"{value}"'
-            elif type(value) is datetime:
-                result = f'"{str(value)}"'
-            else:
-                result = json.dumps(str(value))
-        elif includeNulls:
-            result = "NULL"
-        return result
 
-    def _property_to_json_excluding_nulls(self, prop: property) -> str:
-        """
-        Builds a json-compatible representation of given property, excluding nulls.
-        :param prop: The property.
-        :type prop: property
-        :return: A json representation of given attribute.
-        :rtype: str
-        """
-        return self._property_to_json(prop, includeNulls=False)
-
-    def _property_to_json_including_nulls(self, prop: property) -> str:
-        """
-        Builds a json-compatible representation of given property, including nulls.
-        :param prop: The property.
-        :type prop: property
-        :return: A json representation of given attribute.
-        :rtype: str
-        """
-        return self._property_to_json(prop, includeNulls=True)
+        # For other types, just convert to string
+        return str(value)
 
     def _properties_to_json(
         self, properties: List[property], includeNulls: bool = False
@@ -710,9 +718,11 @@ class ValueObject(BaseObject):
         aux = []
         key = _build_cls_key(self.__class__)
         if key in _properties.keys():
-            aux = self._properties_to_json(_properties[key])
+            aux = self._properties_to_json(_properties[key], includeNulls=True)
         if key in _internal_properties.keys():
-            internal = self._properties_to_json(_internal_properties[key])
+            internal = self._properties_to_json(
+                _internal_properties[key], includeNulls=False
+            )
             internal.append(
                 f'"class": "{self.__class__.__module__}.{self.__class__.__name__}"'
             )

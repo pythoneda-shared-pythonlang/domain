@@ -55,11 +55,12 @@ class Event(ValueObject):
         :type reconstructedPreviousEventIds: str
         """
         super().__init__()
-        if reconstructedId:
+        if reconstructedId is not None:
             self._id = reconstructedId
-        if previousEventIds:
+        self._previous_event_ids = []
+        if previousEventIds is not None:
             self._previous_event_ids = previousEventIds
-        elif reconstructedPreviousEventIds:
+        elif reconstructedPreviousEventIds is not None:
             self._previous_event_ids = reconstructedPreviousEventIds
 
     @property
@@ -70,10 +71,7 @@ class Event(ValueObject):
         :return: Such ids.
         :rtype: List[str]
         """
-        if hasattr(self, "_previous_event_ids"):
-            return self._previous_event_ids
-        else:
-            return []
+        return self._previous_event_ids
 
     async def maybe_trigger(self) -> List:
         """

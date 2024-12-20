@@ -747,6 +747,9 @@ class ValueObject(BaseObject):
             aux = self._properties_to_json(
                 _primary_key_properties[key], includeNulls=False
             )
+        aux.append(
+            f'"_internal": {{ "id": "{self.id}", "class": "{self.__class__.__name__}" }}'
+        )
 
         if len(aux) > 0:
             result = "{ " + ", ".join(aux) + " }"

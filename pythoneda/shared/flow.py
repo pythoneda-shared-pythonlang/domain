@@ -75,24 +75,25 @@ class Flow(Entity, abc.ABC):
         if event is not None:
             if self._first_event is None:
                 self._first_event = event
-            self._events.append(event)
+            self._events.insert(0, event)
 
-    async def resume(self, event: Event):
+    async def resume(self, event: Event) -> List[Event]:
         """
         Resumes the flow with a new event.
         :param event: The event.
         :type event: pythoneda.shared.Event
+        :return: The event resulting from resuming this flow.
+        :rtype: List[pythoneda.shared.Event]
         """
-        if len(event.previous_event_ids) > 0:
-            event_previous_events = event.previous_event_ids
-            if type(event_previous_events) is str:
-                previous_event_id = event_previous_events
-            else:
-                previous_event_id = event_previous_events[-1]
+        result = None
 
-            my_previous_event_id = self._events[-1].id
-            if previous_event_id == my_previous_event_id:
-                await self.continue_flow(event, self._events[-1])
+        if (
+            len(event.previous_event_ids) > 0
+            and self._events[0].id in event.previous_event_ids
+        ):
+            result = await self.continue_flow(event, self._events[0])
+
+        return result
 
     def find_latest_event(self, eventClass: type) -> Event:
         """
@@ -108,13 +109,15 @@ class Flow(Entity, abc.ABC):
         return None
 
     @abc.abstractmethod
-    async def continue_flow(self, event: Event, previousEvent: Event):
+    async def continue_flow(self, event: Event, previousEvent: Event) -> List[Event]:
         """
         Continues the flow with a new event.
         :param event: The event.
         :type event: pythoneda.shared.Event
         :param previousEvent: The previous event.
         :type previousEvent: pythoneda.shared.Event
+        :return: The events resulting from resuming this flow.
+        :rtype: List[pythoneda.shared.Event]
         """
         pass
 

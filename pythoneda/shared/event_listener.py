@@ -234,9 +234,9 @@ def _process_pending_event_listener(
             aux_listeners_by_event_class = []
         if cls not in aux_listeners_by_event_class:
             aux_listeners_by_event_class.append(cls)
-        listenersByEventClass[
-            pending[_build_func_key(func)]
-        ] = aux_listeners_by_event_class
+        listenersByEventClass[pending[_build_func_key(func)]] = (
+            aux_listeners_by_event_class
+        )
         aux_methods = methods.get(cls_key, None)
         if aux_methods is None:
             aux_methods = {}
@@ -403,7 +403,10 @@ class EventListener(BaseObject, abc.ABC):
         else:
             aux = await method(cls, event)
             if aux is not None:
-                result.append(aux)
+                if isinstance(aux, list):
+                    result = aux
+                else:
+                    result.append(aux)
         return result
 
     @classmethod

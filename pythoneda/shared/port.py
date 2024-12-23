@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
+from typing import Dict, Tuple
 
 
 class Port(abc.ABC):
@@ -47,9 +48,13 @@ class Port(abc.ABC):
         super().__init__()
 
     @classmethod
-    def enable(cls):
+    def enable(cls, *args: Tuple, **kwargs: Dict):
         """
         Enables this port.
+        :param args: Additional positional arguments.
+        :type args: Tuple
+        :param kwargs: Additional keyword arguments.
+        :type kwargs: Dict
         """
         cls._enabled = True
 

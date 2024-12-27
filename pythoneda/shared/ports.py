@@ -19,7 +19,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from . import has_class_method, has_method
+from .invariant import inject_invariants, Invariant
 from .port import Port
+from .pythoneda_application import PythonedaApplication
 import importlib
 import inspect
 from typing import Dict, List, Type
@@ -43,27 +46,51 @@ class Ports:
 
     _singleton = None
 
-    def __init__(self, mappings: Dict[Type[Port], List[Port]]):
+    def __init__(
+        self, mappings: Dict[Type[Port], List[Port]], app: PythonedaApplication
+    ):
         """
         Creates a new instance.
         :param mappings: The adapter mappings.
         :type mappings: Dict
+        :param app: The application instance.
+        :type app: pythoneda.shared.application.PythonEDA
         """
         self._mappings = mappings
+        self._app = app
+
+    @property
+    def app(self):
+        """
+        Retrieves the application instance.
+        :return: Such instance.
+        :rtype: pythoneda.shared.PythonedaApplication
+        """
+        return self._app
 
     @classmethod
-    def initialize(cls, mappings: Dict[Type[Port], List[Port]]):
+    @inject_invariants
+    def initialize(
+        cls,
+        mappings: Dict[Type[Port], List[Port]],
+        app: Invariant[PythonedaApplication] = None,
+    ):
         """
         Initializes the singleton.
         :param mappings: The adapter mappings.
         :type mappings: Dict[Port, List[Port]]
+        :param app: The application instance.
+        :type app: pythoneda.shared.PythonedaApplication
         """
-        cls._singleton = Ports(mappings)
+        cls._singleton = Ports(mappings, app)
 
     @classmethod
-    def instance(cls):
+    @inject_invariants
+    def instance(cls, app: Invariant[PythonedaApplication] = None):
         """
         Retrieves the singleton instance.
+        :param app: The application instance.
+        :type app: pythoneda.shared.application.PythonEDA
         :return: Such instance.
         :rtype: Ports
         """
@@ -74,7 +101,9 @@ class Ports:
             logging.getLogger("pythoneda.Ports").warning(
                 "Ports not initialized. Adapters won't be available"
             )
-            result = cls({})
+            if app is not None:
+                result = cls({}, app)
+
         return result
 
     def resolve(self, port: Type[Port]) -> List[Port]:
@@ -90,7 +119,7 @@ class Ports:
         for adapter_class_or_instance in adapter_classes_or_instances:
             if inspect.isclass(adapter_class_or_instance):
                 adapter_class = adapter_class_or_instance
-                result.append(self._instantiate_adapter(adapter_class))
+                result.append(self._instantiate_adapter(adapter_class, self.app))
             else:
                 result.append(adapter_class_or_instance)
 
@@ -112,31 +141,35 @@ class Ports:
         return result
 
     @staticmethod
-    def _instantiate_adapter(adapterClass: Port) -> Port:
+    def _instantiate_adapter(adapterClass: Port, app) -> Port:
         """
         Instantiates given adapter.
         :param adapterClass: The adapter class.
         :type adapterClass: pythoneda.Port
+        :param app: The application instance.
+        :type app: pythoneda.shared.application.PythonEDA
         :return: The adapter instance.
         :rtype: pythoneda.Port
         """
-        return adapterClass.instantiate()
+        return adapterClass.instantiate(app)
 
     @classmethod
-    def sort_by_priority(cls, otherClass: Port) -> int:
+    def sort_by_priority(cls, otherClass: Port, app) -> int:
         """
         Delegates the priority information to given primary port.
         :param otherClass: The primary port.
         :type otherClass: pythoneda.Port
+        :param app: The application instance.
+        :type app: pythoneda.shared.application.PythonEDA
         :return: Such priority.
         :rtype: int
         """
         result = -1
-        if otherClass.has_class_method("default_priority"):
+        if has_class_method(otherClass, "default_priority"):
             result = otherClass.default_priority()
 
-        if otherClass.has_method("priority"):
-            instance = otherClass.instantiate()
+        if has_method(otherClass, "priority"):
+            instance = otherClass.instantiate(app)
             if instance:
                 result = instance.priority()
 
@@ -150,8 +183,12 @@ class Ports:
         :return: The adapter.
         :rtype: List[pythoneda.Port]
         """
+
+        def sort_by_priority_with_app(otherClass):
+            return self.__class__.sort_by_priority(otherClass, self.app)
+
         candidates = self._mappings.get(port, [])
-        return sorted(candidates, key=self.__class__.sort_by_priority)
+        return sorted(candidates, key=sort_by_priority_with_app)
 
     def resolve_by_module_name(self, moduleName: str, portName: str):
         """
@@ -160,6 +197,8 @@ class Ports:
         :type moduleName: str
         :param portName: The name of the Port to resolve.
         :type portName: str
+        :param app: The application instance.
+        :type app: pythoneda.shared.application.PythonEDA
         :return: The adapter.
         :rtype: Port
         """

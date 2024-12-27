@@ -19,7 +19,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from . import BaseObject, Formatting, SensitiveValue
+from . import BaseObject, Formatting, inject_all_invariants, Invariant, SensitiveValue
 import functools
 import importlib
 import inspect
@@ -355,13 +355,17 @@ class ValueObject(BaseObject):
             result = result + _internal_properties[key]
         return result
 
-    def __init__(self):
+    @inject_all_invariants
+    def __init__(self, discriminators: Dict[str, Invariant] = None):
         """
         Creates a new ValueObject instance.
+        :param discriminators: The runtime discriminators.
+        :type discriminators: Dict[str, Invariant]
         """
         self._id = str(uuid.uuid4())
         self._created = datetime.now()
         self._updated = None
+        self._discriminators = discriminators
 
     @property
     @internal_attribute
@@ -401,6 +405,16 @@ class ValueObject(BaseObject):
             return self._updated
         else:
             return None
+
+    @property
+    @internal_attribute
+    def discriminators(self) -> Dict[str, Invariant]:
+        """
+        Retrieves the invariants.
+        :return: The runtime invariants.
+        :rtype: Dict[str, pythoneda.shared.Invariant]
+        """
+        return self._discriminators
 
     @classmethod
     def __init_subclass__(cls, **kwargs):

@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
+from .invariant import Invariant
 from typing import Dict, Tuple
 
 
@@ -41,11 +42,23 @@ class Port(abc.ABC):
 
     _enabled = True
 
-    def __init__(self):
+    def __init__(self, discriminators: Dict[str, Invariant]):
         """
         Creates a new instance.
+        :param discriminators: The runtime discriminators.
+        :type discriminators: Dict[str, pythoneda.shared.Invariant]
         """
         super().__init__()
+        self._discriminators = discriminators
+
+    @property
+    def discriminators(self) -> Dict[str, Invariant]:
+        """
+        Retrieves the runtime discriminators.
+        :return: Such discriminators.
+        :rtype: Dict[str, pythoneda.shared.Invariant]
+        """
+        return self._discriminators
 
     @classmethod
     def enable(cls, *args: Tuple, **kwargs: Dict):
@@ -70,9 +83,11 @@ class Port(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def instantiate(cls):
+    def instantiate(cls, discriminators: Dict[str, Invariant]):
         """
         Creates an instance.
+        :param discriminators: The runtime discriminators.
+        :type discriminators: Dict[str, pythoneda.shared.Invariant]
         :return: The new instance.
         :rtype: pythoneda.shared.Port
         """

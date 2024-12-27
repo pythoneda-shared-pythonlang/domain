@@ -36,11 +36,13 @@ class PrimaryPort(Port, abc.ABC):
         - Application that resolves the adapters for PrimaryPorts.
     """
 
-    def __init__(self):
+    def __init__(self, app):
         """
         Creates a new instance.
+        :param app: The application instance.
+        :type app: pythoneda.shared.application.PythonEDA
         """
-        super().__init__()
+        super().__init__(app)
 
     @abc.abstractmethod
     async def entrypoint(self, app):

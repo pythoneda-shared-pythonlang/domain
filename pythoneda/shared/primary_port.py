@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .port import Port
+from .pythoneda_application import PythonedaApplication
 import abc
 
 
@@ -36,23 +37,21 @@ class PrimaryPort(Port, abc.ABC):
         - Application that resolves the adapters for PrimaryPorts.
     """
 
-    def __init__(self, app):
+    def __init__(self):
         """
         Creates a new instance.
-        :param app: The application instance.
-        :type app: pythoneda.shared.application.PythonEDA
         """
-        super().__init__(app)
+        super().__init__()
 
     @abc.abstractmethod
-    async def entrypoint(self, app):
+    async def entrypoint(self, app: PythonedaApplication):
         """
         Accepts input on behalf of the given application.
-        :param app: The application.
-        :type app: pythoneda.application.PythonEDA
+        :param app: The PythonEDA instance.
+        :type app: pythoneda.shared.PythonedaApplication
         """
         raise NotImplementedError(
-            "entrypoint(app:pythoneda.shared.application.PythonEDA) must be implemented by subclasses"
+            "entrypoint(app: pythoneda.shared.PythonedaApplication) must be implemented by subclasses"
         )
 
     @classmethod

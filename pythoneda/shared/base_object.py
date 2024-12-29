@@ -27,11 +27,8 @@ from . import (
     has_one_param_constructor,
     simplify_class_name,
 )
-from .invariant import inject_invariants, Invariant
 from .logging_port import LoggingPort
 from .logging_port_fallback import LoggingPortFallback
-from .ports import Ports
-from .pythoneda_application import PythonedaApplication
 import re
 from typing import Dict, Type
 
@@ -80,39 +77,26 @@ class BaseObject:
         :return: Such instance.
         :rtype: Any
         """
-        if cls._logging_port is None:
-            ports = Ports.instance()
+        temporary = False
+        port = cls._logging_port
+        if port is None:
+            temporary = True
+            from .ports import Ports
+
+            ports = Ports.instance(False)
             if ports is not None:
-                cls._logging_port = ports.resolve_first(LoggingPort)
-        if cls._logging_port is None:
-            cls._logging_port = LoggingPortFallback()
+                port = ports.resolve_first(LoggingPort)
+        if port is None and temporary:
+            port = LoggingPortFallback("info")
 
         aux = category
         if aux is None:
             aux = simplify_class_name(full_class_name(cls))
 
-        return cls._logging_port.logger(aux)
+        if not temporary:
+            cls._logging_port = port
 
-    @classmethod
-    @inject_invariants
-    def instantiate(cls, invariants: Dict[str, Invariant[PythonedaApplication]]):
-        """
-        Retrieves an instance, if possible.
-        :return: Such instance.
-        :rtype: pythoneda.BaseObject
-        """
-        result = None
-        if has_one_param_constructor(cls, Dict[str, Invariant]) or (
-            has_class_method(cls, "instance")
-            and method_has_one_parameter(cls, "instance", Dict[str, Invariant])
-        ):
-            result = cls(invariants)
-        else:
-            raise NotImplementedError(
-                f"{cls} needs to define a __init__(self, discriminators: Dict[str, Invariant])"
-            )
-
-        return result
+        return port.logger(aux)
 
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et

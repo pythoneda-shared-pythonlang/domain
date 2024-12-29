@@ -19,7 +19,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from . import BaseObject, Event, Invariant, Port
+from . import BaseObject, Event, Port
 import abc
 from typing import Dict
 
@@ -39,14 +39,11 @@ class EventEmitter(BaseObject, Port, abc.ABC):
 
     _receivers = []
 
-    def __init__(self, discriminators: Dict[str, Invariant]):
+    def __init__(self):
         """
         Creates a new EventEmitter instance.
-        :param discriminators: The runtime discriminators.
-        :type discriminators: Dict[str, Invariant]
-
         """
-        super().__init__(discriminators)
+        super().__init__()
 
     @classmethod
     def receivers(cls):

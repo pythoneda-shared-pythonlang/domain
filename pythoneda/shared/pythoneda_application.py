@@ -20,10 +20,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
+from .base_object import BaseObject
+from .invariant import Invariant
+from .invariants import Invariants
 from typing import List
 
 
-class PythonedaApplication(abc.ABC):
+class PythonedaApplication(abc.ABC, BaseObject):
     """
     Represents an application.
 
@@ -44,6 +47,13 @@ class PythonedaApplication(abc.ABC):
         """
         super().__init__()
         self._name = name
+        Invariants.instance().bind(
+            Invariant[PythonedaApplication](
+                self, "pythoneda.shared.PythonedaApplication"
+            ),
+            None,
+        )
+        PythonedaApplication.logger().info(f"Running {self.name}")
 
     @property
     def name(self) -> str:
@@ -64,6 +74,32 @@ class PythonedaApplication(abc.ABC):
         :rtype: List[pythoneda.shared.Event]
         """
         pass
+
+    @classmethod
+    @property
+    def invariant_type(cls) -> str:
+        """
+        Retrieves the invariant type.
+        :return: Such information.
+        :rtype: str
+        """
+        return "pythoneda.shared.PythonedaApplication"
+
+    def __str__(self):
+        """
+        Returns a string representation of the PythonedaApplication instance.
+        :return: Such representation.
+        :rtype: str
+        """
+        return self.name
+
+    def __repr__(self):
+        """
+        Returns a string representation of the PythonedaApplication instance.
+        :return: Such representation.
+        :rtype: str
+        """
+        return self.__str__()
 
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et

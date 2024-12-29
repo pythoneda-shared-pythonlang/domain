@@ -20,10 +20,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .base_object import BaseObject
+from .invariant import Invariant
 import functools
 import inspect
+import json
 import threading
-from typing import Dict, Generic, get_args, get_origin, Optional, Type, TypeVar
+from typing import (
+    Any,
+    Dict,
+    Generic,
+    get_args,
+    get_origin,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+)
 
 
 class Invariants(BaseObject):
@@ -42,6 +54,7 @@ class Invariants(BaseObject):
         """
         super().__init__()
         self._threadlocal_data = threading.local()
+        self._threadlocal_data.values = {}
 
     @classmethod
     def instance(cls):
@@ -56,47 +69,142 @@ class Invariants(BaseObject):
         return cls._singleton
 
     @classmethod
-    def initialize(cls):
+    def _initialize(cls):
         """
         Creates a new instance of this class.
         :return: The new instance.
         :rtype: pythoneda.shared.Invariants
         """
-        instance = cls()
+        return cls()
 
-        if not hasattr(instance._threadlocal_data, "values"):
-            # If the 'values' dictionary doesn't exist yet, create it
-            instance._threadlocal_data.values = {}
-
-        return instance
-
-    def bind_invariant(self, invariant: Invariant, target: Any = None):
+    def bind(self, invariant: Invariant, target: Any = None):
         """
         Binds an invariant to given target, or to all targets if none is specified.
-        :param invariant: The type of the invariant.
-        :type invariant: Type[pythoneda.shared.Invariant]
+        :param invariant: The invariant.
+        :type invariant: pythoneda.shared.Invariant.
         :param target: The target instance.
         :type target: Any
         """
-        bound_invariants = cls._threadlocal_data.values.get(target, {})
-        bound_invariants[Invariant.__class__] = invariant
-        cls._threadlocal_data.values[target] = bound_invariants
+        bound_invariants = self._threadlocal_data.values.get(target, {})
+        bound_invariants[invariant.declared_type] = invariant
+        self._threadlocal_data.values[target] = bound_invariants
 
-    def apply(self, invariantType: Type[Invariant], target: Any = None) -> Invariant:
+    def bind_all(self, invariants: Dict[str, Invariant], target: Any = None):
+        """
+        Binds all given invariants to given target, or to all targets if none is specified.
+        :param invariants: The invariants to bind.
+        :type invariants: Dict[str, pythoneda.shared.Invariant]
+        :param target: The target instance.
+        :type target: Any
+        """
+        self._threadlocal_data.values[target] = invariants
+
+    def apply(self, invariantType: str, target: Any = None) -> Invariant:
         """
         Applies given invariant to a target instance.
         :param invariantType: The type of the invariant.
-        :type invariantType: Type[pythoneda.shared.Invariant]
+        :type invariantType: str
         :param target: The target instance.
         :type target: Any
         :return: The invariant for given target, or None.
         :rtype: pythoneda.shared.Invariant
         """
+        # cls._threadlocal_data.values = {target: {invariantType: invariant}}
+        # The 'target' key might be None if the invariant applies to any target
         result = None
-        bound_invariants = cls._threadlocal_data.values.get(target, None)
+        bound_invariants = self._threadlocal_data.values.get(target, None)
         if bound_invariants is None:
-            bound_invariants = cls._threadlocal_data.values.get(None, None)
+            bound_invariants = self._threadlocal_data.values.get(None, None)
         if bound_invariants is not None:
             result = bound_invariants.get(invariantType, None)
 
         return result
+
+    def apply_all(self, target: Any = None) -> Dict[str, Invariant]:
+        """
+        Applies all invariants to a target instance.
+        :param target: The target instance.
+        :type target: Any
+        :return: The invariants for given target.
+        :rtype: Dict[str, pythoneda.shared.Invariant]
+        """
+        result = self._threadlocal_data.values.get(target, None)
+        if result is None:
+            result = self._threadlocal_data.values.get(None, {})
+
+        return result
+
+    def bind_all_from_json(self, jsonText: str):
+        """
+        Reconstructs invariants from given json text.
+        :param jsonText: The json text.
+        :type jsonText: str
+        """
+        # TODO: Implement this method
+        import json
+
+        self.bind_all_from_dict(json.loads(jsonText))
+
+    def bind_all_from_dict(self, dict: Dict):
+        """
+        Reconstructs invariants from given json text.
+        :param jsonText: The json text.
+        :type jsonText: str
+        """
+        # TODO: Implement this method
+        import json
+
+        self._threadlocal_data.values = dict
+
+    def to_json(self, target: Any = None) -> str:
+        """
+        Serializes invariants associated to given target, or all of them if None specified.
+        :param target: The specific instance.
+        :type target: Any
+        :return: The serialized invariants for that target.
+        :rtype: str
+        """
+        # TODO: Implement this method
+        import json
+
+        dict_to_serialize = self._threadlocal_data.values.get(target, None)
+        if dict_to_serialize is None:
+            dict_to_serialize = self._threadlocal_data.values.get(None, {})
+
+        for k, v in dict_to_serialize.items():
+            if isinstance(v, Invariant):
+                dict_to_serialize[k] = str(v.value)
+
+        return json.dumps(dict_to_serialize)
+
+    def match(self, target: Any, invariants: Dict[str, Invariant]) -> bool:
+        """
+        Checks if given target matches all invariants.
+        :param target: The target instance.
+        :type target: Any
+        :param invariants: The invariants.
+        :type invariants: Dict[str, pythoneda.shared.Invariant]
+        :return: True if the target matches all invariants; False otherwise.
+        :rtype: bool
+        """
+        result = False
+        bound_invariants = self._threadlocal_data.values.get(target, None)
+        if bound_invariants is None:
+            result = True
+        else:
+            result = True
+            for invariantType, invariant in invariants.items():
+                target_invariant = bound_invariants.get(invariantType, None)
+                if target_invariant is None or not target_invariant.match(target):
+                    result = False
+                    break
+
+        return result
+
+    def __str__(self):
+        """
+        Retrieves a text representation of this instance.
+        :return: Such representation.
+        :rtype: str
+        """
+        return self.to_json(None)

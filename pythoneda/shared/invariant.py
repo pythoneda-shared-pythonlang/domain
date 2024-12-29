@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import functools
 import inspect
 import threading
-from typing import Dict, Generic, get_args, get_origin, Optional, Type, TypeVar
+from typing import Dict, Generic, get_args, get_origin, Optional, TypeVar
 
 
 def inject_invariants(fn):
@@ -122,13 +122,16 @@ class Invariant(Generic[T]):
           associated with its domain type (if any).
     """
 
-    def __init__(self, value: T):
+    def __init__(self, value: T, declaredType: str):
         """
         Creates a new Invariant value.
         :param value: The invariant value.
         :type value: T
+        :param declaredType: The type of this invariant.
+        :type declaredType: str
         """
         self._value = value
+        self._declared_type = declaredType
 
     @property
     def value(self) -> T:
@@ -139,3 +142,34 @@ class Invariant(Generic[T]):
         # Safely retrieve the dictionary of values if it exists,
         # or an empty dict if not
         return self._value
+
+    @property
+    def declared_type(self) -> str:
+        """
+        Retrieves the type of this invariant.
+        :return: The type.
+        :rtype: str
+        """
+        return self._declared_type
+
+    def match(self, other: "Invariant") -> bool:
+        """
+        Check if the other invariant has the same value as this one.
+        """
+        return self._value == other._value
+
+    def __str__(self) -> str:
+        """
+        Provides a string representation of this instance.
+        :return: The text representing this instance.
+        :rtype: str
+        """
+        return str(self._value)
+
+    def __repr__(self) -> str:
+        """
+        Provides a string representation of this instance.
+        :return: The text representing this instance.
+        :rtype: str
+        """
+        return self.__str__()

@@ -19,14 +19,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from . import BaseObject, Formatting, inject_all_invariants, Invariant, SensitiveValue
+from . import BaseObject, Formatting, Invariant, Invariants, SensitiveValue
 import functools
 import importlib
 import inspect
 import json
 import uuid
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Type, Union
 
 
 _primary_key_properties = {}
@@ -355,17 +355,13 @@ class ValueObject(BaseObject):
             result = result + _internal_properties[key]
         return result
 
-    @inject_all_invariants
-    def __init__(self, discriminators: Dict[str, Invariant] = None):
+    def __init__(self):
         """
         Creates a new ValueObject instance.
-        :param discriminators: The runtime discriminators.
-        :type discriminators: Dict[str, Invariant]
         """
         self._id = str(uuid.uuid4())
         self._created = datetime.now()
         self._updated = None
-        self._discriminators = discriminators
 
     @property
     @internal_attribute
@@ -408,13 +404,13 @@ class ValueObject(BaseObject):
 
     @property
     @internal_attribute
-    def discriminators(self) -> Dict[str, Invariant]:
+    def invariants(self) -> Dict[Type[Invariant], Invariant]:
         """
         Retrieves the invariants.
         :return: The runtime invariants.
-        :rtype: Dict[str, pythoneda.shared.Invariant]
+        :rtype: Dict[Type[pythoneda.shared.Invariant], pythoneda.shared.Invariant]
         """
-        return self._discriminators
+        return Invariants.instance().apply_all(self)
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
@@ -454,7 +450,7 @@ class ValueObject(BaseObject):
         if hasattr(prop, "fget"):
             value = self._value_to_json(prop.fget(self), includeNulls)
             if value:
-                result = f'"{prop.fget.__name__}": {json.dumps(value)}'
+                result = f'"{prop.fget.__name__}": {self._value_to_json(value, includeNulls)}'
         return result
 
     def _property_to_tuple(self, prop: property, includeNulls: bool = False) -> tuple:
@@ -545,6 +541,10 @@ class ValueObject(BaseObject):
             # Convert datetime objects to an ISO string before json.dumps()
             return value.isoformat()
 
+        # Handle Invariants
+        if isinstance(value, Invariant):
+            return str(value)
+
         # For lists
         if isinstance(value, list):
             # Recursively convert each element
@@ -558,7 +558,7 @@ class ValueObject(BaseObject):
         if isinstance(value, dict):
             # Recursively convert each value
             return {
-                k: self._value_to_json(v, includeNulls)
+                self._value_to_json(k): self._value_to_json(v, includeNulls)
                 for k, v in value.items()
                 if includeNulls or v is not None
             }

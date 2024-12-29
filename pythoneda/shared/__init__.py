@@ -38,7 +38,6 @@ from ._utils import (
     has_default_constructor,
     has_one_param_constructor,
 )
-from .pythoneda_application import PythonedaApplication
 from .port import Port
 from .ports import Ports
 from .logging_port import LoggingPort
@@ -46,6 +45,7 @@ from .logging_port_fallback import LoggingPortFallback
 from .base_object import BaseObject
 from .invariant import inject_all_invariants, inject_invariants, Invariant
 from .invariants import Invariants
+from .pythoneda_application import PythonedaApplication
 from .formatting import Formatting
 from .sensitive_value import SensitiveValue
 from .value_object import (

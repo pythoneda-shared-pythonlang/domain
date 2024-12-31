@@ -75,7 +75,8 @@ class Flow(Entity, abc.ABC):
         if event is not None:
             if self._first_event is None:
                 self._first_event = event
-            self._events.insert(0, event)
+            if event not in self._events:
+                self._events.insert(0, event)
 
     async def resume(self, event: Event) -> List[Event]:
         """
@@ -87,43 +88,78 @@ class Flow(Entity, abc.ABC):
         """
         result = None
 
-        if self.is_subsequence(
-            [event.id] + event.previous_event_ids, [event.id for event in self._events]
-        ):
-            result = await self.continue_flow(event, self._events[0])
+        my_event_ids = [evt.id for evt in self._events]
+        incoming_event_ids = [event.id] + event.previous_event_ids
+        if self.first_continued_second(incoming_event_ids, my_event_ids):
+            result = await self.continue_flow(event)
+        else:
+            Flow.logger().debug(
+                f"Cannot resume {incoming_event_ids} from the flow: {my_event_ids}"
+            )
 
         return result
 
-    def is_subsequence(self, list1: List[Any], list2: List[Any]) -> bool:
+    def first_continued_second(self, first: List[str], second: List[str]) -> bool:
         """
-        Check if list1 is a subsequence of list2.
-        The order of elements in list1 must match their order in list2.
+        Check if the first list is a continuation of the second list.
+        :param first: The first list.
+        :type first: List[str]
+        :param second: The second list.
+        :type second: List[str]
+        :return: True if the first list is a continuation of the second list, False otherwise.
+        :rtype: bool
+        """
+        if first == second:
+            return True
+
+        # Check if first has at least one item not in second
+        if not any(item not in second for item in first):
+            return False
+
+        # Find common items
+        common_items = [item for item in first if item in second]
+
+        # Check if there is at least one common item
+        if not common_items:
+            return False
+
+        # Check if the order of common items is the same in both lists
+        second_indices = [second.index(item) for item in common_items]
+        if second_indices != sorted(second_indices):
+            return False
+
+        return True
+
+    def is_subsequence(self, first: List[Any], second: List[Any]) -> bool:
+        """
+        Check if first is a subsequence of second.
+        The order of elements in first must match their order in second.
 
         Example:
-        list1 = [3, 5, 6]
-        list2 = [3, 2, 5, 9, 6, 10]
-        is_subsequence(list1, list2) -> True
-        :param list1: The first list.
-        :type list1: List[Any]
-        :param list2: The second list.
-        :type list2: List[Any]
+        first = [3, 5, 6]
+        second = [3, 2, 5, 9, 6, 10]
+        is_subsequence(first, second) -> True
+        :param first: The first list.
+        :type first: List[Any]
+        :param second: The second list.
+        :type second: List[Any]
         :return: True if the first list is a subsequence of the second list, False otherwise.
         :rtype: bool
         """
-        # Index to track our progress in list1
+        # Index to track our progress in first
         idx = 0
 
-        # Iterate over all items in list2
-        for item in list2:
-            # If current item matches the next needed item in list1, move to the next needed item
-            if item == list1[idx]:
+        # Iterate over all items in second
+        for item in second:
+            # If current item matches the next needed item in first, move to the next needed item
+            if item == first[idx]:
                 idx += 1
-                # If we've matched all items of list1, return True
-                if idx == len(list1):
+                # If we've matched all items of first, return True
+                if idx == len(first):
                     return True
 
-                # If we exit the loop without matching all items of list1, return False
-        return idx == len(list1)
+                # If we exit the loop without matching all items of first, return False
+        return idx == len(first)
 
     def find_latest_event(self, eventClass: type) -> Event:
         """
@@ -139,13 +175,11 @@ class Flow(Entity, abc.ABC):
         return None
 
     @abc.abstractmethod
-    async def continue_flow(self, event: Event, previousEvent: Event) -> List[Event]:
+    async def continue_flow(self, event: Event) -> List[Event]:
         """
         Continues the flow with a new event.
         :param event: The event.
         :type event: pythoneda.shared.Event
-        :param previousEvent: The previous event.
-        :type previousEvent: pythoneda.shared.Event
         :return: The events resulting from resuming this flow.
         :rtype: List[pythoneda.shared.Event]
         """

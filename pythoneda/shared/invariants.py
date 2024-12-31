@@ -85,6 +85,8 @@ class Invariants(BaseObject):
         :param target: The target instance.
         :type target: Any
         """
+        if not hasattr(self._threadlocal_data, "values"):
+            self._threadlocal_data.values = {}
         bound_invariants = self._threadlocal_data.values.get(target, {})
         bound_invariants[invariant.declared_type] = invariant
         self._threadlocal_data.values[target] = bound_invariants
@@ -97,6 +99,8 @@ class Invariants(BaseObject):
         :param target: The target instance.
         :type target: Any
         """
+        if not hasattr(self._threadlocal_data, "values"):
+            self._threadlocal_data.values = {}
         self._threadlocal_data.values[target] = invariants
 
     def apply(self, invariantType: str, target: Any = None) -> Invariant:
@@ -112,11 +116,12 @@ class Invariants(BaseObject):
         # cls._threadlocal_data.values = {target: {invariantType: invariant}}
         # The 'target' key might be None if the invariant applies to any target
         result = None
-        bound_invariants = self._threadlocal_data.values.get(target, None)
-        if bound_invariants is None:
-            bound_invariants = self._threadlocal_data.values.get(None, None)
-        if bound_invariants is not None:
-            result = bound_invariants.get(invariantType, None)
+        if hasattr(self._threadlocal_data, "values"):
+            bound_invariants = self._threadlocal_data.values.get(target, None)
+            if bound_invariants is None:
+                bound_invariants = self._threadlocal_data.values.get(None, None)
+            if bound_invariants is not None:
+                result = bound_invariants.get(invariantType, None)
 
         return result
 
@@ -128,9 +133,11 @@ class Invariants(BaseObject):
         :return: The invariants for given target.
         :rtype: Dict[str, pythoneda.shared.Invariant]
         """
-        result = self._threadlocal_data.values.get(target, None)
-        if result is None:
-            result = self._threadlocal_data.values.get(None, {})
+        result = {}
+        if hasattr(self._threadlocal_data, "values"):
+            result = self._threadlocal_data.values.get(target, None)
+            if result is None:
+                result = self._threadlocal_data.values.get(None, {})
 
         return result
 
@@ -167,15 +174,19 @@ class Invariants(BaseObject):
         # TODO: Implement this method
         import json
 
-        dict_to_serialize = self._threadlocal_data.values.get(target, None)
-        if dict_to_serialize is None:
-            dict_to_serialize = self._threadlocal_data.values.get(None, {})
+        result = ""
+        if hasattr(self._threadlocal_data, "values"):
+            dict_to_serialize = self._threadlocal_data.values.get(target, None)
+            if dict_to_serialize is None:
+                dict_to_serialize = self._threadlocal_data.values.get(None, {})
 
-        for k, v in dict_to_serialize.items():
-            if isinstance(v, Invariant):
-                dict_to_serialize[k] = str(v.value)
+            for k, v in dict_to_serialize.items():
+                if isinstance(v, Invariant):
+                    dict_to_serialize[k] = str(v.value)
 
-        return json.dumps(dict_to_serialize)
+            result = json.dumps(dict_to_serialize)
+
+        return result
 
     def match(self, target: Any, invariants: Dict[str, Invariant]) -> bool:
         """
@@ -188,16 +199,17 @@ class Invariants(BaseObject):
         :rtype: bool
         """
         result = False
-        bound_invariants = self._threadlocal_data.values.get(target, None)
-        if bound_invariants is None:
-            result = True
-        else:
-            result = True
-            for invariantType, invariant in invariants.items():
-                target_invariant = bound_invariants.get(invariantType, None)
-                if target_invariant is None or not target_invariant.match(target):
-                    result = False
-                    break
+        if hasattr(self._threadlocal_data, "values"):
+            bound_invariants = self._threadlocal_data.values.get(target, None)
+            if bound_invariants is None:
+                result = True
+            else:
+                result = True
+                for invariantType, invariant in invariants.items():
+                    target_invariant = bound_invariants.get(invariantType, None)
+                    if target_invariant is None or not target_invariant.match(target):
+                        result = False
+                        break
 
         return result
 

@@ -62,7 +62,7 @@ class Event(ValueObject):
             self._previous_event_ids = previousEventIds
         elif reconstructedPreviousEventIds is not None:
             self._previous_event_ids = reconstructedPreviousEventIds
-        Event.logger().debug(f"{self.__class__.__name__} {self.id} created.")
+        Event.logger().debug(f"Event {self} created.")
 
     @property
     @internal_attribute

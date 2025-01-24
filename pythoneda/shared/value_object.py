@@ -35,6 +35,9 @@ _pending_primary_key_properties = []
 _filter_properties = {}
 _pending_filter_properties = []
 
+_sensitive_properties = {}
+_pending_sensitive_properties = []
+
 _internal_properties = {}
 _pending_internal_properties = []
 
@@ -168,6 +171,25 @@ def filter_attribute(func):
     return wrapper
 
 
+def sensitive_attribute(func):
+    """
+    Decorator for sensitive attributes.
+    :param func: The getter function to wrap.
+    :type func: callable
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        return func(self, *args, **kwargs)
+
+    from pythoneda.shared.value_object import _pending_sensitive_properties
+
+    _add_to_pending(wrapper, _pending_sensitive_properties, "sensitive_properties")
+    _add_wrapper(wrapper)
+
+    return wrapper
+
+
 def internal_attribute(func):
     """
     Decorator for internal attributes.
@@ -200,6 +222,8 @@ def _process_pending_properties(cls: type, delete: bool = False):
         _pending_primary_key_properties,
         _filter_properties,
         _pending_filter_properties,
+        _sensitive_properties,
+        _pending_sensitive_properties,
         _internal_properties,
         _pending_internal_properties,
     )
@@ -208,12 +232,14 @@ def _process_pending_properties(cls: type, delete: bool = False):
         "_properties": _pending_properties,
         "_primary_key_properties": _pending_primary_key_properties,
         "_filter_properties": _pending_filter_properties,
+        "_sensitive_properties": _pending_sensitive_properties,
         "_internal_properties": _pending_internal_properties,
     }
     dest = {
         "_properties": _properties,
         "_primary_key_properties": _primary_key_properties,
         "_filter_properties": _filter_properties,
+        "_sensitive_properties": _sensitive_properties,
         "_internal_properties": _internal_properties,
     }
     for name, prop in cls.__dict__.items():
@@ -221,6 +247,7 @@ def _process_pending_properties(cls: type, delete: bool = False):
             for key in [
                 "_primary_key_properties",
                 "_filter_properties",
+                "_sensitive_properties",
                 "_properties",
                 "_internal_properties",
             ]:
@@ -228,6 +255,7 @@ def _process_pending_properties(cls: type, delete: bool = False):
     if delete:
         del _pending_properties
         del _pending_filter_properties
+        del _pending_sensitive_properties
         del _pending_primary_key_properties
         del _pending_internal_properties
 
@@ -266,6 +294,7 @@ def _propagate_properties(cls):
         _properties,
         _primary_key_properties,
         _filter_properties,
+        _sensitive_properties,
         _internal_properties,
     )
 
@@ -336,6 +365,19 @@ class ValueObject(BaseObject):
         key = _build_cls_key(cls)
         if key in _filter_properties:
             result = _filter_properties[key]
+        return result
+
+    @classmethod
+    def sensitive_attributes(cls) -> List:
+        """
+        Retrieves the list of sensitive attributes (marked with @sensitive).
+        :return: The sensitive attributes.
+        :rtype: List
+        """
+        result = []
+        key = _build_cls_key(cls)
+        if key in _sensitive_properties:
+            result = _sensitive_properties[key]
         return result
 
     @classmethod

@@ -19,7 +19,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from . import has_class_method, has_method
+from ._utils import has_class_method, has_method
 from .invariants import Invariants
 from .port import Port
 from .pythoneda_application import PythonedaApplication
@@ -81,7 +81,7 @@ class Ports:
         if result is None and warning:
             import logging
 
-            logging.getLogger("pythoneda.Ports").warning(
+            logging.getLogger("pythoneda.shared.Ports").warning(
                 "Ports not initialized. Adapters won't be available"
             )
             import traceback

@@ -47,6 +47,7 @@ class Invariants(BaseObject):
     """
 
     _singleton = None
+    _latest_invariants = {}
 
     def __init__(self):
         """
@@ -90,6 +91,7 @@ class Invariants(BaseObject):
         bound_invariants = self._threadlocal_data.values.get(target, {})
         bound_invariants[invariant.declared_type] = invariant
         self._threadlocal_data.values[target] = bound_invariants
+        self.__class__._latest_invariants[target] = bound_invariants
 
     def bind_all(self, invariants: Dict[str, Invariant], target: Any = None):
         """
@@ -102,6 +104,7 @@ class Invariants(BaseObject):
         if not hasattr(self._threadlocal_data, "values"):
             self._threadlocal_data.values = {}
         self._threadlocal_data.values[target] = invariants
+        self.__class__._latest_invariants[target] = invariants
 
     def apply(self, invariantType: str, target: Any = None) -> Invariant:
         """
@@ -117,11 +120,37 @@ class Invariants(BaseObject):
         # The 'target' key might be None if the invariant applies to any target
         result = None
         if hasattr(self._threadlocal_data, "values"):
-            bound_invariants = self._threadlocal_data.values.get(target, None)
-            if bound_invariants is None:
-                bound_invariants = self._threadlocal_data.values.get(None, None)
-            if bound_invariants is not None:
-                result = bound_invariants.get(invariantType, None)
+            result = self._apply(invariantType, target, self._threadlocal_data.values)
+
+        if result is None:
+            result = self._apply(
+                invariantType, target, self.__class__._latest_invariants
+            )
+
+        return result
+
+    def _apply(
+        self, invariantType: str, target: Any = None, invariants: Dict = {}
+    ) -> Invariant:
+        """
+        Applies given invariant to a target instance.
+        :param invariantType: The type of the invariant.
+        :type invariantType: str
+        :param target: The target instance.
+        :type target: Any
+        :param invariants: The bound invariants.
+        :type invariants: Dict
+        :return: The invariant for given target, or None.
+        :rtype: pythoneda.shared.Invariant
+        """
+        # cls._threadlocal_data.values = {target: {invariantType: invariant}}
+        # The 'target' key might be None if the invariant applies to any target
+        result = None
+        bound_invariants = invariants.get(target, None)
+        if bound_invariants is None:
+            bound_invariants = invariants.get(None, None)
+        if bound_invariants is not None:
+            result = bound_invariants.get(invariantType, None)
 
         return result
 

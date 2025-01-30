@@ -19,12 +19,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from .base_object import BaseObject
 from .port import Port
 import abc
 from typing import Dict, List
 
 
-class Repo(Port, abc.ABC):
+class Repo(Port, BaseObject, abc.ABC):
     """
     A repository for a specific entity class.
 

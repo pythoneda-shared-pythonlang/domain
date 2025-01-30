@@ -128,6 +128,9 @@ def sensitive(func):
     def wrapper(self, *args, **kwargs):
         return SensitiveValue(func(self, *args, **kwargs))
 
+    from .value_object import _pending_sensitive_properties
+
+    _add_to_pending(wrapper, _pending_sensitive_properties, "sensitive_properties")
     _add_wrapper(wrapper)
 
     return wrapper
@@ -364,7 +367,7 @@ class ValueObject(BaseObject):
         result = []
         key = _build_cls_key(cls)
         if key in _filter_properties:
-            result = _filter_properties[key]
+            result = list(map(lambda p: p.fget.__name__, _filter_properties[key]))
         return result
 
     @classmethod
@@ -377,7 +380,7 @@ class ValueObject(BaseObject):
         result = []
         key = _build_cls_key(cls)
         if key in _sensitive_properties:
-            result = _sensitive_properties[key]
+            result = list(map(lambda p: p.fget.__name__, _sensitive_properties[key]))
         return result
 
     @classmethod
@@ -392,9 +395,11 @@ class ValueObject(BaseObject):
         result = []
         key = _build_cls_key(cls)
         if key in _properties:
-            result = _properties[key]
+            result = list(map(lambda p: p.fget.__name__, _properties[key]))
         if key in _internal_properties:
-            result = result + _internal_properties[key]
+            result = result + list(
+                map(lambda p: p.fget.__name__, _internal_properties[key])
+            )
         return result
 
     def __init__(self):

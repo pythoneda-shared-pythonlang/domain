@@ -319,6 +319,17 @@ def _propagate_properties(cls):
                     _internal_properties[cls_key].append(prop)
 
 
+def make_hashable(obj):
+    if isinstance(obj, (list, tuple)):
+        return tuple(make_hashable(e) for e in obj)
+    elif isinstance(obj, dict):
+        return tuple(sorted((k, make_hashable(v)) for k, v in obj.items()))
+    elif isinstance(obj, set):
+        return frozenset(make_hashable(e) for e in obj)
+    else:
+        return obj
+
+
 class ValueObject(BaseObject):
     """
     A value object.
@@ -862,7 +873,7 @@ class ValueObject(BaseObject):
         """
         attrs = []
         for key in self.__class__.primary_key():
-            attrs.append(getattr(self, key, None))
+            attrs.append(make_hashable(getattr(self, key, None)))
         if len(attrs) == 0:
             result = hash((self.id, self.__class__))
         else:

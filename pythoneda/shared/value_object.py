@@ -64,8 +64,32 @@ def _build_cls_key(cls):
     :return: A key.
     :rtype: str
     """
-
     return f"{cls.__module__}.{cls.__name__}"
+
+
+def _find_cls_key(cls, props: Dict):
+    """
+    Finds a key for given class in a collection.
+    :param cls: The class.
+    :type cls: type
+    :param props: The collection to inspect.
+    :type props: Dict
+    :return: A key.
+    :rtype: str
+    """
+    global _properties
+    result = _build_cls_key(cls)
+
+    if not result in props:
+        result = None
+        for ancestor in cls.__mro__[1:]:
+            key = _build_cls_key(ancestor)
+            if key in props:
+                result = key
+                print(f"found key {result} for {cls.__name__}")
+                break
+
+    return result
 
 
 def _classes_by_key(key):
@@ -688,6 +712,29 @@ class ValueObject(BaseObject):
                     result[name] = value
         return result
 
+    def to_dict_simplified(self) -> Dict:
+        """
+        Provides a simplified dictionary representation of this instance.
+        :return: The dictionary representing this instance.
+        :rtype: str
+        """
+        result = {}
+        key = _find_cls_key(self.__class__, _primary_key_properties)
+        if key is not None:
+            for prop in _primary_key_properties[key]:
+                name, _ = self._property_to_tuple(prop)
+                value = self._get_attribute_to_json(name)
+                if value is not None:
+                    result[name] = value
+        key = _find_cls_key(self.__class__, _filter_properties)
+        if key is not None:
+            for prop in _filter_properties[key]:
+                name, _ = self._property_to_tuple(prop)
+                value = self._get_attribute_to_json(name)
+                if value is not None:
+                    result[name] = value
+        return result
+
     @classmethod
     def default_json_serializer(cls, obj) -> Dict:
         """
@@ -744,10 +791,16 @@ class ValueObject(BaseObject):
         :return: A reconstructed instance.
         :rtype: pythoneda.ValueObject
         """
-        module_name, class_name = contents["_internal"]["class"].rsplit(".", 1)
-        module = importlib.import_module(module_name)
-        actual_class = getattr(module, class_name)
-        return actual_class.new_from_json(contents)
+        print(f"from_dict: {contents}")
+        if "_internal" in contents:
+            module_name, class_name = contents["_internal"]["class"].rsplit(".", 1)
+            module = importlib.import_module(module_name)
+            actual_class = getattr(module, class_name)
+            result = actual_class.new_from_json(contents)
+        else:
+            result = cls.new_from_json(contents)
+
+        return result
 
     @classmethod
     def new_from_json(cls, dictFromJson: Dict):

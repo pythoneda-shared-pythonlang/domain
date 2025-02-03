@@ -50,7 +50,7 @@ def snake_to_camel(inputText: str) -> str:
     return "".join(x.title() for x in components)
 
 
-def camel_to_snake(cls, inputText: str) -> str:
+def camel_to_snake(inputText: str) -> str:
     """
     Converts a string in camel case, to snake case.
     :param inputText: The camel-case input to convert.

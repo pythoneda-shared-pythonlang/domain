@@ -112,24 +112,24 @@ class Repo(Port, BaseObject, abc.ABC):
         raise NotImplementedError("update() must be implemented by subclasses")
 
     @abc.abstractmethod
-    def delete(self, identifier: str):
+    def delete(self, pk: Dict):
         """
         Deletes an existing Entity.
-        :param identifier: The identifier of the entity.
-        :type identifier: str
+        :param pk: The primary key values.
+        :type pk: Dict
         """
-        raise NotImplementedError("delete() must be implemented by subclasses")
+        raise NotImplementedError("delete(Dict) must be implemented by subclasses")
 
     @abc.abstractmethod
     def find_by_pk(self, pk: Dict):
         """
         Retrieves an entity matching a primary key filter.
         :param pk: The primary key values.
-        :type pk: str
+        :type pk: Dict
         :return: An instance of the EntityClass type, or None if none found.
         :rtype: pythoneda.Entity
         """
-        raise NotImplementedError("find_by_pk() must be implemented by subclasses")
+        raise NotImplementedError("find_by_pk(Dict) must be implemented by subclasses")
 
     @abc.abstractmethod
     def list(self) -> List:

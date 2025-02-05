@@ -19,13 +19,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from . import BaseObject, Formatting, Invariant, Invariants, SensitiveValue
+from .base_object import BaseObject
+from datetime import datetime
+from .formatting import Formatting
 import functools
 import importlib
 import inspect
+from .invariant import Invariant
+from .invariants import Invariants
 import json
+from .sensitive_value import SensitiveValue
+from ._utils import has_method
 import uuid
-from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 
@@ -649,11 +654,7 @@ class ValueObject(BaseObject):
         # For dictionaries
         if isinstance(value, dict):
             # Recursively convert each value
-            return {
-                self._value_to_json(k): self._value_to_json(v, includeNulls)
-                for k, v in value.items()
-                if includeNulls or v is not None
-            }
+            return self._dict_to_json(value, includeNulls)
 
         if callable(value):
             if inspect.isfunction(value) and self._function_takes_no_arguments(value):
@@ -663,8 +664,26 @@ class ValueObject(BaseObject):
             elif isinstance(value, property):
                 value = self._property_to_json(value, includeNulls)
 
+        if has_method(value, "to_dict"):
+            return self._dict_to_json(value.to_dict(), includeNulls)
         # For other types, just convert to string
         return str(value)
+
+    def _dict_to_json(self, value: Dict, includeNulls: bool = False) -> Dict:
+        """
+        Builds a json-compatible representation of given dictionary.
+        :param dictionary: The dictionary.
+        :type dictionary: Dict
+        :param includeNulls: Whether to include nulls or not.
+        :type includeNulls: bool
+        :return: A json representation of given dictionary.
+        :rtype: Dict
+        """
+        return {
+            self._value_to_json(k): self._value_to_json(v, includeNulls)
+            for k, v in value.items()
+            if includeNulls or v is not None
+        }
 
     def _properties_to_json(
         self, properties: List[property], includeNulls: bool = False

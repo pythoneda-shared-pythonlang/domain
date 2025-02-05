@@ -19,11 +19,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import abc
 from . import internal_attribute, ValueObject
-from typing import List
+from typing import List, Type
 
 
-class Event(ValueObject):
+class Event(ValueObject, abc.ABC):
     """
     The base event class.
 
@@ -90,6 +91,17 @@ class Event(ValueObject):
         :rtype: bool
         """
         return False
+
+    @classmethod
+    @property
+    @abc.abstractmethod
+    def entity_type(cls) -> str:
+        """
+        Retrieves the entity type.
+        :return: Such information.
+        :rtype: str
+        """
+        pass
 
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et

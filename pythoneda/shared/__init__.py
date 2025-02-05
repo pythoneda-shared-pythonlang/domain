@@ -58,9 +58,10 @@ from .value_object import (
 )
 from .domain_exception import DomainException
 from .unsupported_event import UnsupportedEvent
+from .event_reference import EventReference
+from .event import Event
 from .entity import Entity
 from .entity_in_progress import EntityInProgress
-from .event import Event
 from .event_emitter import EventEmitter
 from .event_listener import listen, EventListener
 from .primary_port import PrimaryPort

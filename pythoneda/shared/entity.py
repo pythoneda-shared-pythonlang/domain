@@ -19,7 +19,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from .value_object import ValueObject
+from .event import Event
+from .event_reference import EventReference
+from .value_object import internal_attribute, ValueObject
+from typing import List, Optional
 
 
 class Entity(ValueObject):
@@ -38,11 +41,34 @@ class Entity(ValueObject):
         - Repo: To rebuild them from persistence layers.
     """
 
-    def __init__(self):
+    def __init__(self, eventHistory: List[EventReference]):
         """
         Creates a new Entity instance.
+        :param eventHistory: The event history.
+        :type eventHistory: List[pythoneda.shared.EventReference]
         """
+        self._event_history = eventHistory
+        self._created_event = None
         super().__init__()
+
+    @property
+    @internal_attribute
+    def event_history(self) -> List[EventReference]:
+        """
+        Returns the event history.
+        :return: The event history.
+        :rtype: List[pythoneda.shared.EventReference]
+        """
+        return self._event_history
+
+    @property
+    def created_event(self) -> Optional[Event]:
+        """
+        Returns the event that created this entity.
+        :return: The event that created this entity.
+        :rtype: Optional[pythoneda.shared.Event]
+        """
+        return self._created_event
 
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et

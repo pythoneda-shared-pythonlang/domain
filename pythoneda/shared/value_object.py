@@ -26,7 +26,7 @@ import inspect
 import json
 import uuid
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 
 _primary_key_properties = {}
@@ -437,13 +437,14 @@ class ValueObject(BaseObject):
             )
         return result
 
-    def __init__(self):
+    def __init__(self, omitInternalAttributes: Optional[bool] = False):
         """
         Creates a new ValueObject instance.
         """
         self._id = str(uuid.uuid4())
         self._created = datetime.now()
         self._updated = None
+        self._omit_internal_attributes = omitInternalAttributes
 
     @property
     @internal_attribute
@@ -493,6 +494,15 @@ class ValueObject(BaseObject):
         :rtype: Dict[Type[pythoneda.shared.Invariant], pythoneda.shared.Invariant]
         """
         return Invariants.instance().apply_all(self)
+
+    @property
+    def omit_internal_attributes(self) -> bool:
+        """
+        Checks if internal attributes should be omitted.
+        :return: True if they should be omitted, False otherwise.
+        :rtype: bool
+        """
+        return self._omit_internal_attributes
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
@@ -694,16 +704,16 @@ class ValueObject(BaseObject):
         result = {}
         internal_properties = {}
         key = _build_cls_key(self.__class__)
-        if key in _internal_properties.keys():
-            for prop in _internal_properties[key]:
-                name, value = self._property_to_tuple(prop)
-                if value:
-                    internal_properties[name] = value
-        internal = {
-            "properties": internal_properties,
-            "class": f"{self.__class__.__module__}.{self.__class__.__name__}",
-        }
-        result["_internal"] = internal
+        if not self.omit_internal_attributes:
+            if key in _internal_properties.keys():
+                for prop in _internal_properties[key]:
+                    name, value = self._property_to_tuple(prop)
+                    if value:
+                        internal_properties[name] = value
+            result["_internal"] = {
+                "properties": internal_properties,
+                "class": f"{self.__class__.__module__}.{self.__class__.__name__}",
+            }
         if key in _properties.keys():
             for prop in _properties[key]:
                 name, _ = self._property_to_tuple(prop)
@@ -719,6 +729,7 @@ class ValueObject(BaseObject):
         :rtype: str
         """
         result = {}
+        result["id"] = self.id
         key = _find_cls_key(self.__class__, _primary_key_properties)
         if key is not None:
             for prop in _primary_key_properties[key]:
@@ -791,7 +802,6 @@ class ValueObject(BaseObject):
         :return: A reconstructed instance.
         :rtype: pythoneda.ValueObject
         """
-        print(f"from_dict: {contents}")
         if "_internal" in contents:
             module_name, class_name = contents["_internal"]["class"].rsplit(".", 1)
             module = importlib.import_module(module_name)
@@ -818,6 +828,9 @@ class ValueObject(BaseObject):
                 prop_name = cls._property_name(prop)
                 if name == prop_name:
                     result._set_attribute_from_json(name, value)
+        id = dictFromJson.get("id", None)
+        if id is not None:
+            result._id = id
 
         return result
 
@@ -844,14 +857,15 @@ class ValueObject(BaseObject):
         key = _build_cls_key(self.__class__)
         if key in _properties.keys():
             aux = self._properties_to_json(_properties[key], includeNulls=True)
-        if key in _internal_properties.keys():
-            internal = self._properties_to_json(
-                _internal_properties[key], includeNulls=False
-            )
-            internal.append(
-                f'"class": "{self.__class__.__module__}.{self.__class__.__name__}"'
-            )
-            aux.append('"_internal": { ' + ", ".join(internal) + " }")
+        if not self.omit_internal_attributes:
+            if key in _internal_properties.keys():
+                internal = self._properties_to_json(
+                    _internal_properties[key], includeNulls=False
+                )
+                internal.append(
+                    f'"class": "{self.__class__.__module__}.{self.__class__.__name__}"'
+                )
+                aux.append('"_internal": { ' + ", ".join(internal) + " }")
 
         if len(aux) > 0:
             result = "{ " + ", ".join(aux) + " }"
@@ -872,9 +886,10 @@ class ValueObject(BaseObject):
             aux = self._properties_to_json(
                 _primary_key_properties[key], includeNulls=False
             )
-        aux.append(
-            f'"_internal": {{ "id": "{self.id}", "class": "{self.__class__.__name__}" }}'
-        )
+        if not self.omit_internal_attributes:
+            aux.append(
+                f'"_internal": {{ "id": "{self.id}", "class": "{self.__class__.__name__}" }}'
+            )
 
         if len(aux) > 0:
             result = "{ " + ", ".join(aux) + " }"

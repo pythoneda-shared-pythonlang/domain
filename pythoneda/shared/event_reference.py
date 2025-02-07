@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .value_object import primary_key_attribute, ValueObject
+from typing import Dict
 
 
 class EventReference(ValueObject):
@@ -45,7 +46,7 @@ class EventReference(ValueObject):
         """
         self._event_id = eventId
         self._event_class = eventClass
-        super().__init__(omitInternalAttributes=True)
+        super().__init__(omitInternal=True)
 
     @property
     @primary_key_attribute
@@ -66,6 +67,14 @@ class EventReference(ValueObject):
         :rtype: str
         """
         return self._event_class
+
+    def to_dict(self) -> Dict:
+        """
+        Converts the object to a dictionary.
+        :return: The dictionary.
+        :rtype: Dict
+        """
+        return {"event_id": self.event_id, "event_class": self.event_class}
 
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et

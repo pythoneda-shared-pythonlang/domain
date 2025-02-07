@@ -19,13 +19,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import abc
+from datetime import datetime
 from .event import Event
 from .event_reference import EventReference
 from .value_object import internal_attribute, ValueObject
 from typing import List, Optional
 
 
-class Entity(ValueObject):
+class Entity(ValueObject, abc.ABC):
     """
     Represents an Entity: something meaningful, unique, with set of attributes, and, in good designs, behavior.
 
@@ -49,6 +51,7 @@ class Entity(ValueObject):
         """
         self._event_history = eventHistory
         self._created_event = None
+        self._deleted_event = None
         super().__init__()
 
     @property
@@ -69,6 +72,92 @@ class Entity(ValueObject):
         :rtype: Optional[pythoneda.shared.Event]
         """
         return self._created_event
+
+    @property
+    def deleted_event(self) -> Optional[Event]:
+        """
+        Returns the event that deleted this entity.
+        :return: The event that deleted this entity.
+        :rtype: Optional[pythoneda.shared.Event]
+        """
+        return self._deleted_event
+
+    @classmethod
+    @abc.abstractmethod
+    def _create_instance_from(cls, event: Event) -> "Entity":
+        """
+        Creates a new instance from a request.
+        :param event: The event.
+        :type event: pythoneda.shared.Event
+        :return: A new instance.
+        :rtype: pythoneda.shared.Entity
+        """
+        pass
+
+    @abc.abstractmethod
+    def create_created_event(self, createRequested: Event) -> Event:
+        """
+        Creates a new client created event.
+        :param createRequested: The request.
+        :type createRequested: pythoneda.shared.Event
+        :return: The event.
+        :rtype: pythoneda.shared.Event
+        """
+        pass
+
+    @classmethod
+    def create_from(cls, event: Event) -> ValueObject:
+        """
+        Creates a new instance from a create-request event.
+        :param event: The event.
+        :type event: pythoneda.shared.Event
+        :return: A new instance.
+        :rtype: pythoneda.shared.ValueObject
+        """
+        result = cls._create_instance_from(event)
+
+        result._created_event = result.create_created_event(event)
+
+        result._event_history.append(
+            EventReference(
+                result._created_event.id, result._created_event.__class__.__name__
+            )
+        )
+
+        return result
+
+    @abc.abstractmethod
+    def create_deleted_event(self, deleteRequest: Event) -> Event:
+        """
+        Creates a deleted event.
+        :param deleteRequest: The request.
+        :type deleteRequest: pythoneda.shared.Event
+        :return: The event.
+        :rtype: pythoneda.shared.Event
+        """
+
+    def delete(self, deleteRequest: Event) -> Event:
+        """
+        Deletes this instance.
+        :param deleteRequest: The request.
+        :type deleteRequest: pythoneda.shared.Event
+        :return: The deleted event.
+        :rtype: pythoneda.shared.Event
+        """
+        self._deleted_event = self.create_deleted_event(deleteRequest)
+
+        self._event_history.append(
+            EventReference(deleteRequest.id, deleteRequest.__class__.__name__)
+        )
+        self._event_history.append(
+            EventReference(
+                self._deleted_event.id, self._deleted_event.__class__.__name__
+            )
+        )
+
+        self._deleted = datetime.now()
+
+        return self._deleted_event
 
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et

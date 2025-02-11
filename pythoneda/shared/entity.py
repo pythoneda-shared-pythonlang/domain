@@ -82,6 +82,25 @@ class Entity(ValueObject, abc.ABC):
         """
         return self._deleted_event
 
+    def _annotate_event(self, event: Event):
+        """
+        Annotates given event in the event history.
+        :param event: The event to annotate.
+        :type event: pythoneda.shared.Event
+        """
+        self._event_history.append(
+            EventReference(event.id, event.__class__.__name__)
+        )
+
+    def apply(self, event: Event):
+        """
+        Applies an event to the entity.
+        :param event: The event.
+        :type event: pythoneda.shared.Event
+        """
+        # double dispatch by the book
+        event.apply_to(self)
+
     @classmethod
     @abc.abstractmethod
     def _create_instance_from(cls, event: Event) -> "Entity":

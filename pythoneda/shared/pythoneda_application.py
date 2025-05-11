@@ -91,7 +91,7 @@ class PythonedaApplication(abc.ABC, BaseObject):
         :return: Such representation.
         :rtype: str
         """
-        return self.name
+        return self.name if self.name is not None else ""
 
     def __repr__(self):
         """

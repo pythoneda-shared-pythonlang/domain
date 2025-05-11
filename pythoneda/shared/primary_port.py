@@ -43,6 +43,13 @@ class PrimaryPort(Port, abc.ABC):
         """
         super().__init__()
 
+    @classmethod
+    async def configure(self):
+        """
+        Performs optional configuration of the port.
+        """
+        pass
+
     @abc.abstractmethod
     async def entrypoint(self, app: PythonedaApplication):
         """
@@ -54,9 +61,8 @@ class PrimaryPort(Port, abc.ABC):
             "entrypoint(app: pythoneda.shared.PythonedaApplication) must be implemented by subclasses"
         )
 
-    @classmethod
     @property
-    def is_one_shot_compatible(cls) -> bool:
+    def is_one_shot_compatible(self) -> bool:
         """
         Retrieves whether this primary port should be instantiated when
         "one-shot" behavior is active.

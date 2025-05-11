@@ -109,12 +109,14 @@ class LoggingFallback:
 
             time_format = "%Y-%m-%d %H:%M:%S"
             current_time = datetime.now().strftime(time_format)
-            if invariant_app is None:
-                print(f"[?!] {current_time} - {category} - {level.upper()} - {message}")
-            else:
-                print(
-                    f"[{invariant_app.value}] {current_time} - {category} - {level.upper()} - {message}"
-                )
+            invariant_app_value = (
+                invariant_app.value if invariant_app is not None else None
+            )
+            if invariant_app_value is None:
+                invariant_app_value = "?!"
+            print(
+                f"[{invariant_app_value}] {current_time} - {category} - {level.upper()} - {message}"
+            )
 
     def truncate_category(self, category: str, maxLength: int):
         """

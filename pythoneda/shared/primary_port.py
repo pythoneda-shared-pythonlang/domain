@@ -61,8 +61,9 @@ class PrimaryPort(Port, abc.ABC):
             "entrypoint(app: pythoneda.shared.PythonedaApplication) must be implemented by subclasses"
         )
 
+    @classmethod
     @property
-    def is_one_shot_compatible(self) -> bool:
+    def is_one_shot_compatible(cls) -> bool:
         """
         Retrieves whether this primary port should be instantiated when
         "one-shot" behavior is active.
